@@ -1,0 +1,24 @@
+name: kairo
+
+repository: https://github.com/azadhmhd/kairo
+
+packages:
+  - apps/**
+  - packages/**
+
+command:
+  bootstrap:
+    usePubspecOverrides: true
+
+scripts:
+  analyze:
+    exec: flutter analyze
+
+  test:
+    exec: flutter test
+
+  format:
+    run: dart format .
+
+ide:
+  intellij: true

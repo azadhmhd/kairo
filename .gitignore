@@ -1,0 +1,21 @@
+
+# FVM Version Cache
+.fvm/
+
+
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+.fvm/flutter_sdk
+
+.idea/
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+.DS_Store
+
