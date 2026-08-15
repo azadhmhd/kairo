@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'router.dart';
 import 'theme.dart';
 
-class KairoApp extends StatelessWidget {
+/// The root widget: theme, routing, and nothing else.
+class KairoApp extends ConsumerWidget {
+  /// Creates the root widget.
   const KairoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
       title: 'Kairo',
       debugShowCheckedModeBanner: false,
       theme: kairoTheme,
-      home: const Scaffold(
-        body: Center(
-          child: Text('Kairo'),
-        ),
-      ),
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }

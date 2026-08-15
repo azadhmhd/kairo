@@ -1,0 +1,21 @@
+name: kairo_character_engine
+description: "The behaviour of Kairo's character: animation, emotion and presence."
+version: 0.0.1
+
+resolution: workspace
+
+environment:
+  sdk: ^3.12.2
+  flutter: ">=3.29.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The rig is SVG path data ported from kairo.js, rasterised at runtime.
+  flutter_svg: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

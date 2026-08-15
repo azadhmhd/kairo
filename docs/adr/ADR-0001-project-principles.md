@@ -1,6 +1,7 @@
 # ADR-0001: Project Principles
 
-Status: Accepted
+Status: Accepted. Principle 1 amended by
+[ADR-0006](ADR-0006-licence.md).
 
 Date: 2026-07-22
 
@@ -18,7 +19,9 @@ The project adopts the following principles.
 - Public GitHub repository
 - Community driven
 - Transparent development
-- MIT License
+- MIT License — replaced by PolyForm Noncommercial 1.0.0 in
+  [ADR-0006](ADR-0006-licence.md). The repository stays public and readable;
+  only commercial use is withheld.
 
 ### 2. Offline First
 

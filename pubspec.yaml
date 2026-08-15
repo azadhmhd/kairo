@@ -1,0 +1,70 @@
+name: kairo
+description: "Kairo — an offline-first desktop companion for healthier computer habits."
+publish_to: none
+
+environment:
+  sdk: ^3.12.2
+
+# Kairo is a single pub workspace: one resolution, one lockfile, one
+# `.dart_tool` for every package. Melos 7 dropped `melos.yaml` in favour of
+# this, which is Dart's own mechanism rather than a tool-specific one.
+#
+# Every path listed here must carry `resolution: workspace` in its own pubspec,
+# and every package in the repository must be listed — globs are not accepted.
+workspace:
+  - apps/desktop
+  - packages/kairo_character_engine
+  - packages/kairo_design_system
+  - packages/kairo_desktop_engine
+  - packages/kairo_event_bus
+  - packages/kairo_reminder_engine
+  - packages/kairo_scheduler
+  - packages/kairo_shared_models
+  - packages/kairo_storage
+  - packages/kairo_workflow_engine
+
+# Melos is deliberately not a dependency here.
+#
+# A workspace resolves once, for everything in it, so anything listed becomes a
+# constraint on everything else. Melos needs `cli_util ^0.5.0` and `drift_dev`
+# needs `cli_util ^0.4.0`, and the two cannot both be satisfied — a build tool's
+# own dependencies would be deciding which version of Drift Kairo can use.
+#
+# Melos is installed globally (`dart pub global activate melos`) and reads the
+# configuration below without being part of the resolution.
+
+melos:
+  repository: https://github.com/azadhmhd/kairo
+
+  scripts:
+    analyze:
+      exec: flutter analyze
+
+    # Regenerates every generated file in the repository. Run it after changing
+    # a Pigeon schema or a Drift table; both are checked in, so a stale
+    # generated file is a build that disagrees with its source.
+    generate:
+      run: melos run generate:bridge --no-select && melos run generate:database --no-select
+
+    # Both sides of the platform bridge, from its Pigeon schema.
+    generate:bridge:
+      exec: dart run pigeon --input pigeons/platform_bridge.dart
+      packageFilters:
+        dirExists: pigeons
+
+    # The Drift database classes, from the table definitions.
+    generate:database:
+      exec: dart run build_runner build --delete-conflicting-outputs
+      packageFilters:
+        dependsOn:
+          - drift_dev
+
+    # Packages reserved for a future milestone carry no tests, and
+    # `flutter test` fails when there is no test directory to run.
+    test:
+      exec: flutter test
+      packageFilters:
+        dirExists: test
+
+    format:
+      run: dart format .

@@ -18,8 +18,8 @@ Repository structure:
 - packages/
 - assets/
 - docs/
-- scripts/
-- tools/
+- scripts/ — never used; removed 2026-08-15
+- tools/ — never used; removed 2026-08-15
 
 Packages must be reusable and independently testable.
 

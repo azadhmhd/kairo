@@ -1,0 +1,26 @@
+name: kairo_desktop_engine
+description: "Control over Kairo's native desktop windows."
+version: 0.0.1
+
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: ^3.12.2
+  flutter: ">=3.29.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  window_manager: ^0.5.2
+
+  kairo_event_bus:
+    path: ../kairo_event_bus
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  pigeon: ^27.3.0

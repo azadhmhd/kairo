@@ -1,4 +1,3 @@
-include: package:flutter_lints/flutter.yaml
-
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+# Kairo's shared rules. Change them in the repository's analysis_options.yaml
+# rather than here, so every package stays held to the same standard.
+include: ../../analysis_options.yaml

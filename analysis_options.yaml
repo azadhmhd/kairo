@@ -1,0 +1,23 @@
+# The analysis rules for every package in the repository.
+#
+# Each package includes this file rather than restating the rules, so there is
+# one place to change what Kairo considers acceptable Dart.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    # Kairo prefers explicit code over inferred code. Both of these turn a
+    # silent assumption by the analyzer into an error the author has to answer:
+    # `strict-casts` refuses an implicit downcast from `dynamic`, and
+    # `strict-inference` refuses to guess a type it cannot see.
+    strict-casts: true
+    strict-inference: true
+
+linter:
+  rules:
+    # Kairo's services take their collaborators as named parameters and store
+    # them in private fields. The analyzer suggests `this._field` for that, but
+    # a named parameter cannot begin with an underscore, so the suggestion does
+    # not compile. The rule has nothing useful to say about this codebase.
+    prefer_initializing_formals: false

@@ -1,0 +1,38 @@
+name: kairo_reminder_engine
+description: "Scheduling and delivery of Kairo's reminders, expressed as workflows."
+version: 0.0.1
+
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: ^3.12.2
+  flutter: ">=3.29.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+
+  # This package is a composition of the others: it adds no machinery, only the
+  # part that is specifically about reminders.
+  kairo_event_bus:
+    path: ../kairo_event_bus
+
+  kairo_scheduler:
+    path: ../kairo_scheduler
+
+  kairo_shared_models:
+    path: ../kairo_shared_models
+
+  kairo_storage:
+    path: ../kairo_storage
+
+  kairo_workflow_engine:
+    path: ../kairo_workflow_engine
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

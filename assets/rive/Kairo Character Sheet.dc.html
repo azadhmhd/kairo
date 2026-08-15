@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Kairo — Official Mascot & Rig</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#F7F4EE;font-family:'Nunito',sans-serif;color:#2C302E}
+  a{color:#3E7C4F;text-decoration:none} a:hover{color:#2F5E3C;text-decoration:underline}
+  ::selection{background:#A9D9BB}
+</style>
+<script src="kairo.js"></script>
+</helmet>
+
+<div style="max-width:1240px;margin:0 auto;padding:48px 40px 96px;display:flex;flex-direction:column;gap:72px">
+
+  <!-- HERO -->
+  <header style="display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center;background:#fff;border:1px solid #E5E1D8;border-radius:28px;padding:48px 56px;box-shadow:0 2px 12px rgba(44,48,46,.05)">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#3E7C4F">Official Mascot · Production Character Sheet</div>
+      <h1 style="margin:0;font-size:72px;font-weight:900;line-height:1;letter-spacing:-.02em">Kairo</h1>
+      <p style="margin:0;font-size:19px;line-height:1.55;max-width:520px;color:#4A4F4C">A calm, kind desktop companion who helps you build healthier computer habits. Ten-ish years old, endlessly patient, never loud. Built here as a <strong>fully layered vector rig</strong> — every part below is a named, separable layer, animating live.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <span style="background:#EAF3EC;color:#2F5E3C;font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px">14 animation states</span>
+        <span style="background:#EAF3EC;color:#2F5E3C;font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px">16 expressions</span>
+        <span style="background:#EAF3EC;color:#2F5E3C;font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px">19 poses</span>
+        <span style="background:#EAF3EC;color:#2F5E3C;font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px">Rive / Spine / Lottie-ready layers</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      <kairo-char data-master="1" size="260" expression="happy" anim="idle" follow="" hoodie="{{ hoodie }}" speed="{{ speed }}"></kairo-char>
+      <div style="font-family:'Caveat',cursive;font-size:22px;color:#3E7C4F;transform:rotate(-3deg)">breathing, blinking, watching your cursor →</div>
+    </div>
+  </header>
+
+  <!-- PALETTE -->
+  <section>
+    <h2 style="margin:0 0 6px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">01 · Color Palette</h2>
+    <p style="margin:0 0 20px;color:#4A4F4C;max-width:640px">Wellness-calibrated: forest anchors, mint accents, no saturation spikes. All fills in the rig reference these seven tokens.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
+      <sc-for list="{{ palette }}" as="c" hint-placeholder-count="7">
+        <div style="background:#fff;border:1px solid #E5E1D8;border-radius:16px;overflow:hidden">
+          <div style="height:72px;background:{{ c.hex }}"></div>
+          <div style="padding:10px 14px"><div style="font-weight:800;font-size:14px">{{ c.name }}</div><div style="font-size:12.5px;color:#7A7F7B;font-family:monospace">{{ c.hex }} · {{ c.use }}</div></div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- TURNAROUND -->
+  <section>
+    <h2 style="margin:0 0 6px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">02 · Character Turnaround</h2>
+    <p style="margin:0 0 20px;color:#4A4F4C;max-width:640px">Head ≈ 45% of total height. Soft silhouette, zero sharp edges. All four views share the same proportion guides.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;background:#fff;border:1px solid #E5E1D8;border-radius:24px;padding:32px;background-image:repeating-linear-gradient(to bottom,transparent,transparent 59px,#EFEBE2 59px,#EFEBE2 60px)">
+      <sc-for list="{{ turnaround }}" as="t" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+          <kairo-char view="{{ t.view }}" size="190" expression="neutral" anim="none" hoodie="{{ hoodie }}"></kairo-char>
+          <div style="font-weight:800;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#5A5F5B">{{ t.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- EXPRESSIONS -->
+  <section>
+    <h2 style="margin:0 0 6px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">03 · Expression Sheet — 16 States</h2>
+    <p style="margin:0 0 20px;color:#4A4F4C;max-width:640px">Driven entirely by 4 swappable face layers: brows, eyes, mouth, extras. Blush is a fifth dial.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+      <sc-for list="{{ expressions }}" as="ex" hint-placeholder-count="16">
+        <div style="background:#fff;border:1px solid #E5E1D8;border-radius:16px;padding:14px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <kairo-char expression="{{ ex }}" size="120" anim="none" hoodie="{{ hoodie }}"></kairo-char>
+          <div style="font-weight:800;font-size:13.5px;text-transform:capitalize">{{ ex }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- POSES -->
+  <section>
+    <h2 style="margin:0 0 6px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">04 · Pose Library — 19 Poses</h2>
+    <p style="margin:0 0 20px;color:#4A4F4C;max-width:640px">Every pose is pure joint rotation on the same rig — nothing redrawn. The numbers per pose are in the rigging notes below.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px">
+      <sc-for list="{{ poses }}" as="p" hint-placeholder-count="19">
+        <div style="background:#fff;border:1px solid #E5E1D8;border-radius:16px;padding:14px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <kairo-char pose="{{ p.pose }}" expression="{{ p.expr }}" size="132" anim="none" hoodie="{{ hoodie }}"></kairo-char>
+          <div style="font-weight:800;font-size:13.5px;text-transform:capitalize">{{ p.pose }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ANIMATION STATES -->
+  <section>
+    <h2 style="margin:0 0 6px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">05 · Animation States — Live</h2>
+    <p style="margin:0 0 20px;color:#4A4F4C;max-width:640px">All loops running on the rig right now. Idle breathing and blink layer under every other state.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px">
+      <sc-for list="{{ animStates }}" as="st" hint-placeholder-count="14">
+        <div style="background:#fff;border:1px solid #E5E1D8;border-radius:16px;padding:16px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;overflow:hidden">
+          <kairo-char anim="{{ st.anim }}" pose="{{ st.pose }}" expression="{{ st.expr }}" view="{{ st.view }}" size="150" hoodie="{{ hoodie }}" speed="{{ speed }}"></kairo-char>
+          <div style="font-weight:800;font-size:13.5px;text-transform:capitalize">{{ st.label }}</div>
+          <div style="font-size:12px;color:#8A8F8B">{{ st.note }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- WALK CYCLE FRAMES -->
+  <section>
+    <h2 style="margin:0 0 6px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">06 · Walk Cycle — 8 Frames</h2>
+    <p style="margin:0 0 20px;color:#4A4F4C;max-width:640px">One 0.74s cycle sampled at 1/8 intervals — contact, down, pass, up, and mirrors. Arms counter-swing legs; body bobs twice per cycle.</p>
+    <div style="display:flex;gap:4px;background:#fff;border:1px solid #E5E1D8;border-radius:20px;padding:24px 16px;overflow-x:auto">
+      <sc-for list="{{ walkFrames }}" as="f" hint-placeholder-count="8">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:120px">
+          <kairo-char view="side" anim="walk" paused="" phase="{{ f.phase }}" size="112" hoodie="{{ hoodie }}"></kairo-char>
+          <div style="font-size:12px;font-weight:800;color:#8A8F8B">{{ f.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- PLAYGROUND -->
+  <section>
+    <h2 style="margin:0 0 6px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">07 · Interaction Playground</h2>
+    <p style="margin:0 0 20px;color:#4A4F4C;max-width:640px">How Kairo behaves on a desktop: appears politely, speaks in a bubble, waits, reacts. Click a behavior — or click Kairo.</p>
+    <div style="background:linear-gradient(180deg,#DCE6DC,#C3D2C4);border-radius:24px;padding:28px 32px 0;position:relative;overflow:hidden">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:2">
+        <sc-for list="{{ behaviors }}" as="b" hint-placeholder-count="8">
+          <button onClick="{{ b.go }}" style="background:{{ b.bg }};color:{{ b.fg }};border:1px solid rgba(44,48,46,.18);font-family:'Nunito';font-weight:800;font-size:13.5px;padding:8px 16px;border-radius:999px;cursor:pointer" style-hover="filter:brightness(1.1)">{{ b.label }}</button>
+        </sc-for>
+      </div>
+      <div style="height:340px;position:relative">
+        <sc-if value="{{ bubbleText }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:50%;bottom:290px;transform:translateX(-40%);background:#F8F5EF;border-radius:16px;padding:14px 20px;font-size:16px;font-weight:700;color:#2C302E;box-shadow:0 6px 24px rgba(0,0,0,.25);max-width:280px;z-index:3">
+            {{ bubbleText }}
+            <div style="position:absolute;bottom:-8px;left:38px;width:16px;height:16px;background:#F8F5EF;transform:rotate(45deg)"></div>
+          </div>
+        </sc-if>
+        <div onClick="{{ pokeKairo }}" style="position:absolute;bottom:6px;left:50%;width:240px;margin-left:-120px;cursor:pointer;transition:transform 6s linear;transform:translateX({{ kairoX }}px)">
+          <kairo-char size="230" anim="{{ pgAnim }}" pose="{{ pgPose }}" expression="{{ pgExpr }}" follow="" flip="{{ pgFlip }}" shadow="none" hoodie="{{ hoodie }}" speed="{{ speed }}"></kairo-char>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:10px;background:rgba(0,0,0,.28)"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGGING + LAYERS -->
+  <section style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div style="background:#fff;border:1px solid #E5E1D8;border-radius:24px;padding:32px">
+      <h2 style="margin:0 0 14px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">08 · Layer Breakdown</h2>
+      <p style="margin:0 0 14px;font-size:14.5px;color:#4A4F4C">Exact layer tree of the rig (front view). Each is a named <code style="background:#F0EDE4;padding:1px 6px;border-radius:6px">data-part</code> group in the exported SVG — import into Rive/Spine and every piece arrives separated.</p>
+      <pre style="margin:0;background:#F7F4EE;border-radius:14px;padding:18px;font-size:13px;line-height:1.7;overflow-x:auto">root
+├─ ground-shadow
+├─ leg-left  ─ pants · shoe (upper/sole/lace)
+├─ leg-right ─ pants · shoe
+├─ torso ─ hood-back · hoodie-body · tee · zipper · drawstrings · pockets
+├─ arm-left  ─ sleeve · hand-left
+├─ arm-right ─ sleeve · hand-right · prop slot
+└─ head ─ hair-back · ears · face-base
+        · hair-front · hair-sides · hair-tuft
+        · face ─ brows · eyes (iris/highlights/lash) · nose · mouth · blush
+        · extras (?, !, zzz, tear, sparkles)</pre>
+    </div>
+    <div style="background:#fff;border:1px solid #E5E1D8;border-radius:24px;padding:32px">
+      <h2 style="margin:0 0 14px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">09 · Rigging — Joints & Pivots</h2>
+      <p style="margin:0 0 14px;font-size:14.5px;color:#4A4F4C">Six bones cover every pose in this sheet. Coordinates are in the rig's 200×236 space.</p>
+      <div style="display:flex;flex-direction:column;gap:0;font-size:14px">
+        <sc-for list="{{ joints }}" as="j" hint-placeholder-count="7">
+          <div style="display:grid;grid-template-columns:130px 90px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid #F0EDE4">
+            <strong>{{ j.bone }}</strong><span style="font-family:monospace;color:#3E7C4F">{{ j.pivot }}</span><span style="color:#5A5F5B">{{ j.range }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANIMATION NOTES + MATERIALS -->
+  <section style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div style="background:#fff;border:1px solid #E5E1D8;border-radius:24px;padding:32px">
+      <h2 style="margin:0 0 14px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">10 · Animation Notes</h2>
+      <div style="display:flex;flex-direction:column;font-size:14.5px;line-height:1.6">
+        <sc-for list="{{ animNotes }}" as="n" hint-placeholder-count="8">
+          <div style="padding:9px 0;border-bottom:1px solid #F0EDE4"><strong style="color:#2F5E3C">{{ n.t }}</strong> — {{ n.d }}</div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #E5E1D8;border-radius:24px;padding:32px">
+      <h2 style="margin:0 0 14px;font-size:15px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#3E7C4F">11 · Material · Shadow · Lighting · Clothing</h2>
+      <div style="display:flex;flex-direction:column;font-size:14.5px;line-height:1.6">
+        <sc-for list="{{ styleNotes }}" as="n" hint-placeholder-count="6">
+          <div style="padding:9px 0;border-bottom:1px solid #F0EDE4"><strong style="color:#2F5E3C">{{ n.t }}</strong> — {{ n.d }}</div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPORT -->
+  <section style="background:#2C302E;border-radius:24px;padding:40px 48px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center">
+    <div>
+      <h2 style="margin:0 0 8px;font-size:24px;font-weight:900;color:#F8F5EF">Export & the road to .riv</h2>
+      <p style="margin:0;font-size:15.5px;line-height:1.65;color:#C8CCC8;max-width:620px">A <code style="color:#A9D9BB">.riv</code> binary can only be authored in the Rive editor — but this rig removes all the hard work. Download the <strong style="color:#F8F5EF">layered SVG</strong>, drag it into Rive (every <code style="color:#A9D9BB">data-part</code> arrives as a separate layer), set the six pivots from section 09, and rebuild the state machine from sections 05 & 10. Alternatively: this rig runs <strong style="color:#F8F5EF">as-is in Electron/Tauri</strong> today — <code style="color:#A9D9BB">kairo.js</code> is dependency-free with a transparent background.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onClick="{{ downloadSVG }}" style="background:#3E7C4F;color:#fff;border:none;font-family:'Nunito';font-weight:800;font-size:15px;padding:14px 26px;border-radius:14px;cursor:pointer" style-hover="background:#2F5E3C">Download layered SVG</button>
+      <button onClick="{{ downloadPoseSheet }}" style="background:transparent;color:#A9D9BB;border:2px solid #4A554E;font-family:'Nunito';font-weight:800;font-size:15px;padding:12px 26px;border-radius:14px;cursor:pointer" style-hover="border-color:#A9D9BB">Download expression + pose SVGs (zip-free, multi-file)</button>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;hoodie&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#3E7C4F&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#3E7C4F&quot;, &quot;#A9D9BB&quot;, &quot;#2C302E&quot;, &quot;#5B7C8A&quot;], &quot;section&quot;: &quot;Character&quot;}, &quot;speed&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 1, &quot;min&quot;: 0.5, &quot;max&quot;: 1.6, &quot;step&quot;: 0.1, &quot;tsType&quot;: &quot;number&quot;, &quot;unit&quot;: &quot;\u00d7&quot;, &quot;section&quot;: &quot;Animation&quot;}}">
+class Component extends DCLogic {
+  state = { pgAnim: 'idle', pgPose: 'standing', pgExpr: 'happy', pgFlip: false, kairoX: 0, bubbleText: 'Hey! I\u2019m Kairo \u2014 click a behavior above.' };
+  _set(anim, pose, expr, bubble, x, flip) {
+    this.setState({ pgAnim: anim, pgPose: pose || 'standing', pgExpr: expr || 'happy', bubbleText: bubble || '', kairoX: x == null ? this.state.kairoX : x, pgFlip: !!flip });
+  }
+  renderVals() {
+    const s = this.state;
+    const hoodie = this.props.hoodie ?? '#3E7C4F';
+    const speed = String(this.props.speed ?? 1);
+    const palette = [
+      { name: 'Forest Green', hex: '#3E7C4F', use: 'hoodie, shoes, UI accent' },
+      { name: 'Deep Forest', hex: '#2F5E3C', use: 'hood, seams, shading' },
+      { name: 'Mint', hex: '#A9D9BB', use: 'drawstrings, sparkles, props' },
+      { name: 'Warm White', hex: '#F8F5EF', use: 'tee, soles, bubbles' },
+      { name: 'Soft Gray', hex: '#C8CCC8', use: 'outlines on white' },
+      { name: 'Charcoal', hex: '#2C302E', use: 'pants, text' },
+      { name: 'Skin / Hair', hex: '#F6D6B8', use: 'with #2A211C hair' }
+    ];
+    const turnaround = [
+      { view: 'front', label: 'Front' }, { view: 'quarter', label: 'Three-quarter' },
+      { view: 'side', label: 'Side' }, { view: 'back', label: 'Back' }
+    ];
+    const expressions = ['happy','thinking','curious','excited','proud','sad','concerned','waiting','sleeping','laughing','celebrating','shy','encouraging','surprised','focused','neutral'];
+    const poses = [
+      { pose: 'standing', expr: 'neutral' }, { pose: 'waving', expr: 'happy' },
+      { pose: 'walking', expr: 'neutral' }, { pose: 'running', expr: 'focused' },
+      { pose: 'sitting', expr: 'neutral' }, { pose: 'stretching', expr: 'closed' },
+      { pose: 'pointing', expr: 'encouraging' }, { pose: 'holding water', expr: 'happy' },
+      { pose: 'holding coffee', expr: 'waiting' }, { pose: 'reading', expr: 'focused' },
+      { pose: 'typing', expr: 'focused' }, { pose: 'sleeping', expr: 'sleeping' },
+      { pose: 'jumping', expr: 'excited' }, { pose: 'celebrating', expr: 'celebrating' },
+      { pose: 'thumbs up', expr: 'proud' }, { pose: 'hands behind back', expr: 'shy' },
+      { pose: 'looking up', expr: 'curious' }, { pose: 'looking down', expr: 'thinking' },
+      { pose: 'thinking', expr: 'thinking' }
+    ];
+    const animStates = [
+      { anim: 'idle', label: 'Idle', note: 'breathe 3.8s + blink 4.6s', expr: 'neutral', pose: 'standing', view: 'front' },
+      { anim: 'walk', label: 'Walk cycle', note: '0.74s, side view', expr: 'neutral', pose: 'standing', view: 'side' },
+      { anim: 'run', label: 'Run cycle', note: '0.42s + forward lean', expr: 'focused', pose: 'standing', view: 'side' },
+      { anim: 'wave', label: 'Wave', note: 'arm 118\u2013150\u00b0 + head tilt', expr: 'happy', pose: 'waving', view: 'front' },
+      { anim: 'celebrate', label: 'Celebrate', note: 'hop + squash + confetti', expr: 'celebrating', pose: 'celebrating', view: 'front' },
+      { anim: 'think', label: 'Thinking', note: 'head sway + pulsing dots', expr: 'thinking', pose: 'thinking', view: 'front' },
+      { anim: 'sleep', label: 'Sleep', note: 'slow sway + floating z', expr: 'sleeping', pose: 'sleeping', view: 'front' },
+      { anim: 'stretch', label: 'Stretch', note: 'arms up, +4.5% spine', expr: 'proud', pose: 'standing', view: 'front' },
+      { anim: 'drink', label: 'Drink water', note: 'bottle-to-mouth loop', expr: 'happy', pose: 'holding water', view: 'front' },
+      { anim: 'jump', label: 'Jump', note: 'anticipation squash 7%', expr: 'excited', pose: 'standing', view: 'front' },
+      { anim: 'dance', label: 'Happy dance', note: 'rock + alternating arms', expr: 'laughing', pose: 'standing', view: 'front' },
+      { anim: 'look', label: 'Look around', note: 'head \u00b18\u00b0, eyes lead', expr: 'curious', pose: 'standing', view: 'front' },
+      { anim: 'talk', label: 'Talk', note: 'mouth 0.28s + nod', expr: 'happy', pose: 'standing', view: 'front' },
+      { anim: 'idle', label: 'Shy idle', note: 'blush dial at 1.7\u00d7', expr: 'shy', pose: 'hands behind back', view: 'front' }
+    ];
+    const walkFrames = [0,1,2,3,4,5,6,7].map(i => ({ phase: String(i / 8), label: ['contact','down','pass','up','contact\u2032','down\u2032','pass\u2032','up\u2032'][i] }));
+    const behaviors = [
+      { label: '\u25B6 Walk in', go: () => { this._set('walk', 'standing', 'neutral', '', -400); setTimeout(() => this._set('walk', 'standing', 'happy', '', 0), 60); setTimeout(() => this._set('talk', 'standing', 'happy', 'Hey! Ready for a quick stretch?', 0), 4200); } },
+      { label: 'Remind: water', go: () => this._set('talk', 'holding water', 'encouraging', 'Have you had some water?', 0) },
+      { label: 'Remind: eyes', go: () => this._set('talk', 'standing', 'concerned', 'Let\u2019s rest your eyes for a minute.', 0) },
+      { label: 'Celebrate', go: () => this._set('celebrate', 'celebrating', 'celebrating', 'You did it! I\u2019m proud of you.', 0) },
+      { label: 'Think', go: () => this._set('think', 'thinking', 'thinking', '', 0) },
+      { label: 'Stretch', go: () => this._set('stretch', 'standing', 'proud', 'Reach for the ceiling\u2026', 0) },
+      { label: 'Sleep', go: () => this._set('sleep', 'sleeping', 'sleeping', '', 0) },
+      { label: 'Walk out \u25C0', go: () => { this._set('walk', 'standing', 'neutral', 'Back to work \u2014 see you soon!', -400, true); } }
+    ].map((b, i) => ({ ...b, bg: i === 0 || i === 7 ? '#3E7C4F' : '#F8F5EF', fg: i === 0 || i === 7 ? '#fff' : '#2C302E' }));
+    const joints = [
+      { bone: 'head', pivot: '(100, 124)', range: 'tilt \u00b110\u00b0 \u00b7 nod for talk \u00b7 drives hair follow-through' },
+      { bone: 'arm-left', pivot: '(74, 132)', range: '-165\u00b0 (up) \u2192 +40\u00b0 \u00b7 hand is child pivot' },
+      { bone: 'arm-right', pivot: '(126, 132)', range: '-40\u00b0 \u2192 +165\u00b0 \u00b7 prop slot parents to hand' },
+      { bone: 'leg-left', pivot: '(90, 172)', range: '\u00b135\u00b0 walk/run \u00b7 -78\u00b0 sit' },
+      { bone: 'leg-right', pivot: '(110, 172)', range: '\u00b135\u00b0 walk/run \u00b7 -78\u00b0 sit' },
+      { bone: 'root', pivot: '(100, 218)', range: 'bob, hop, squash (origin at feet)' },
+      { bone: 'breathe', pivot: '(100, 176)', range: 'scaleY 1.02 \u00b7 always-on secondary layer' }
+    ];
+    const animNotes = [
+      { t: 'Layering rule', d: 'breathe + blink run under every state; never disable both at once or Kairo reads as frozen.' },
+      { t: 'Easing', d: 'everything ease-in-out; nothing linear except confetti fall. Anticipation on jump/celebrate: 7% squash at feet-origin before lift.' },
+      { t: 'Squash & stretch', d: 'subtle only \u2014 scaleY 0.93\u20131.05, origin always (100, 218) so feet stay planted.' },
+      { t: 'Walk', d: '0.74s cycle, legs \u00b122\u00b0, arms counter-phase, root bobs at 2\u00d7 frequency (0.37s).' },
+      { t: 'Run', d: '0.42s, \u00b138\u00b0, +6\u00b0 forward lean on root, higher bob with landing squash.' },
+      { t: 'Enter / exit', d: 'never teleport: translate the whole character at \u2248 65 px/s while in walk state; flip scaleX(-1) for leftward travel.' },
+      { t: 'Eye tracking', d: 'pupils translate max 3px toward cursor; head follows at 4\u00b0 max, eyes lead head by ~80ms.' },
+      { t: 'Blink', d: 'scaleY to 0.07 over 2 frames every ~4.6s; randomize \u00b11s per instance in production.' }
+    ];
+    const styleNotes = [
+      { t: 'Material', d: 'flat matte fills, no gradients except the two-tone iris. Cloth reads via silhouette, not texture.' },
+      { t: 'Shadow', d: 'single soft ground ellipse at 10% charcoal; no cast shadows on the body. Scale it with jump height (smaller when airborne).' },
+      { t: 'Lighting', d: 'implied top-front key: one +25% highlight streak in hair, iris lightens toward bottom. Never rim-light.' },
+      { t: 'Line', d: 'no outlines; separation via value steps (hood vs hoodie = 28% darker same hue).' },
+      { t: 'Clothing', d: 'forest zip hoodie over warm-white tee, mint drawstrings, charcoal joggers, forest sneakers with white soles \u2014 timeless, logo-free.' },
+      { t: 'Scale floor', d: 'rig stays readable at 96px tall; below that, drop nose + drawstrings first.' }
+    ];
+    return {
+      hoodie, speed, palette, turnaround, expressions, poses, animStates, walkFrames, behaviors, joints, animNotes, styleNotes,
+      pgAnim: s.pgAnim, pgPose: s.pgPose, pgExpr: s.pgExpr, pgFlip: s.pgFlip ? '' : undefined, kairoX: s.kairoX, bubbleText: s.bubbleText,
+      pokeKairo: () => {
+        this._set('jump', 'standing', 'surprised', 'Oh! Hello!', this.state.kairoX);
+        clearTimeout(this._pokeT);
+        this._pokeT = setTimeout(() => this._set('idle', 'standing', 'happy', '', this.state.kairoX), 2600);
+      },
+      downloadSVG: () => {
+        const el = document.querySelector('kairo-char[data-master]');
+        const blob = new Blob([el.getLayeredSVG()], { type: 'image/svg+xml' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'kairo-layered.svg'; a.click();
+      },
+      downloadPoseSheet: () => {
+        const tmp = document.createElement('kairo-char');
+        tmp.style.position = 'fixed'; tmp.style.left = '-9999px';
+        document.body.appendChild(tmp);
+        const items = ['happy','excited','sad','sleeping','surprised'].map(e => ['expression', e])
+          .concat([['pose','waving'],['pose','celebrating'],['pose','holding water'],['pose','sitting']]);
+        let i = 0;
+        const next = () => {
+          if (i >= items.length) { tmp.remove(); return; }
+          const [attr, val] = items[i++];
+          tmp.setAttribute('expression', 'neutral'); tmp.setAttribute('pose', 'standing');
+          tmp.setAttribute(attr, val); tmp.setAttribute('anim', 'none');
+          const blob = new Blob([tmp.getLayeredSVG()], { type: 'image/svg+xml' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob); a.download = `kairo-${val.replace(/ /g, '-')}.svg`; a.click();
+          setTimeout(next, 350);
+        };
+        next();
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
