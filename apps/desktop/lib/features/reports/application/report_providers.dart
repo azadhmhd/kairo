@@ -67,6 +67,27 @@ final Provider<int> streakProvider = Provider<int>((Ref ref) {
   );
 });
 
+/// Every outcome in the report window, added up.
+final Provider<DailyTally> reportTotalsProvider = Provider<DailyTally>((Ref ref) {
+  final List<DailyTally> days = ref.watch(dailyTalliesFilledProvider);
+  return days.fold(
+    DailyTally(day: ref.watch(todayProvider), due: 0, completed: 0),
+    (DailyTally sum, DailyTally d) => DailyTally(
+      day: sum.day,
+      due: sum.due + d.due,
+      completed: sum.completed + d.completed,
+      missed: sum.missed + d.missed,
+      dismissed: sum.dismissed + d.dismissed,
+      snoozed: sum.snoozed + d.snoozed,
+    ),
+  );
+});
+
+final StreamProvider<HealthReport?> latestHealthReportProvider =
+    StreamProvider<HealthReport?>(
+  (Ref ref) => ref.watch(healthReportRepositoryProvider).watchLatest(),
+);
+
 /// One tally per kind of reminder over the report window.
 final FutureProvider<List<KindTally>> kindTalliesProvider =
     FutureProvider<List<KindTally>>((Ref ref) {

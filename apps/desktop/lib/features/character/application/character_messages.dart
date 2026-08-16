@@ -28,10 +28,18 @@ sealed class CharacterMessage {
         if (id is! String || label is! String) {
           return null;
         }
-        return ShowReminder(occurrenceId: id, label: label);
+        return ShowReminder(
+          occurrenceId: id,
+          label: label,
+          reactions: _reactionsFrom(decoded['reactions']),
+        );
 
       case ReminderUnanswered._type:
         return const ReminderUnanswered();
+
+      case SayLine._type:
+        final Object? line = decoded['line'];
+        return line is String ? SayLine(line) : null;
 
       case ReminderSettled._type:
         final ReminderOutcome? outcome = _outcomeNamed(decoded['outcome']);
@@ -56,6 +64,17 @@ sealed class CharacterMessage {
   /// Writes this message as the text the relay carries.
   String encode();
 
+  static Map<ReminderOutcome, String> _reactionsFrom(Object? decoded) {
+    if (decoded is! Map<String, dynamic>) {
+      return const <ReminderOutcome, String>{};
+    }
+    return <ReminderOutcome, String>{
+      for (final MapEntry<String, dynamic> entry in decoded.entries)
+        if (_outcomeNamed(entry.key) case final ReminderOutcome outcome)
+          if (entry.value is String) outcome: entry.value as String,
+    };
+  }
+
   static ReminderOutcome? _outcomeNamed(Object? name) {
     for (final ReminderOutcome outcome in ReminderOutcome.values) {
       if (outcome.name == name) {
@@ -72,7 +91,11 @@ sealed class CharacterMessage {
 /// to look one up in.
 final class ShowReminder extends CharacterMessage {
   /// Announces the reminder [label], recorded as occurrence [occurrenceId].
-  const ShowReminder({required this.occurrenceId, required this.label});
+  const ShowReminder({
+    required this.occurrenceId,
+    required this.label,
+    this.reactions = const <ReminderOutcome, String>{},
+  });
 
   static const String _type = 'show';
 
@@ -82,11 +105,19 @@ final class ShowReminder extends CharacterMessage {
   /// What Kairo should say.
   final String label;
 
+  /// What to say on the way out for each answer, sent ahead of the click so
+  /// the character can react without waiting for a round trip.
+  final Map<ReminderOutcome, String> reactions;
+
   @override
   String encode() => jsonEncode(<String, Object?>{
     'type': _type,
     'id': occurrenceId,
     'label': label,
+    'reactions': <String, String>{
+      for (final MapEntry<ReminderOutcome, String> entry in reactions.entries)
+        entry.key.name: entry.value,
+    },
   });
 }
 
@@ -124,6 +155,20 @@ final class ReminderUnanswered extends CharacterMessage {
 
   @override
   String encode() => jsonEncode(<String, Object?>{'type': _type});
+}
+
+/// Something to say that is not a reminder and needs no answer.
+final class SayLine extends CharacterMessage {
+  /// Asks the character to say [line] and then leave.
+  const SayLine(this.line);
+
+  static const String _type = 'say';
+
+  /// What to say.
+  final String line;
+
+  @override
+  String encode() => jsonEncode(<String, Object?>{'type': _type, 'line': line});
 }
 
 /// The user answered the reminder from the character's own bubble.

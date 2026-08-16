@@ -17,6 +17,9 @@ dependencies:
   flutter_riverpod: ^2.6.1
   go_router: ^16.0.0
 
+  kairo_ai:
+    path: ../../packages/kairo_ai
+
   kairo_character_engine:
     path: ../../packages/kairo_character_engine
 

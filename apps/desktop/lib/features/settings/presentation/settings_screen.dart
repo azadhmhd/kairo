@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kairo_ai/ai.dart';
 import 'package:kairo_design_system/design_system.dart';
 import 'package:kairo_shared_models/shared_models.dart';
 
 import '../../../app/router.dart';
+import '../../reminders/presentation/reminder_visuals.dart';
 import '../application/settings_controller.dart';
 
 /// Where the user tells Kairo how to behave.
@@ -47,12 +49,210 @@ class SettingsScreen extends ConsumerWidget {
                     const SizedBox(height: KairoSpacing.lg),
                     _StartupCard(settings: settings),
                     const SizedBox(height: KairoSpacing.lg),
+                    _CoachCard(settings: settings),
+                    const SizedBox(height: KairoSpacing.lg),
                     const _DataCard(),
                   ],
                 ),
         ),
       ),
     );
+  }
+}
+
+/// Where coaching messages are written, if the user wants any.
+class _CoachCard extends ConsumerStatefulWidget {
+  const _CoachCard({required this.settings});
+
+  final UserSettings settings;
+
+  @override
+  ConsumerState<_CoachCard> createState() => _CoachCardState();
+}
+
+class _CoachCardState extends ConsumerState<_CoachCard> {
+  late final TextEditingController _baseUrl =
+      TextEditingController(text: widget.settings.ai.baseUrl);
+  late final TextEditingController _model =
+      TextEditingController(text: widget.settings.ai.model);
+  late final TextEditingController _apiKey =
+      TextEditingController(text: widget.settings.ai.apiKey);
+
+  String? _result;
+  bool _testing = false;
+
+  @override
+  void dispose() {
+    _baseUrl.dispose();
+    _model.dispose();
+    _apiKey.dispose();
+    super.dispose();
+  }
+
+  AiSettings get _edited => widget.settings.ai.copyWith(
+        baseUrl: _baseUrl.text.trim(),
+        model: _model.text.trim(),
+        apiKey: _apiKey.text.trim(),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final AiSettings ai = widget.settings.ai;
+
+    return KairoCard(
+      padding: const EdgeInsets.all(KairoSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text('Coaching', style: textTheme.titleMedium),
+              ),
+              Switch(
+                value: ai.enabled,
+                onChanged: (bool enabled) =>
+                    _save(_edited.copyWith(enabled: enabled)),
+              ),
+            ],
+          ),
+          const SizedBox(height: KairoSpacing.sm),
+          Text(
+            'Kairo can reword a reminder you keep putting off, write you a '
+            'summary of how it is going, and say goodnight when your quiet '
+            'hours begin. It needs a model to write with.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: KairoColors.textSecondary,
+            ),
+          ),
+          if (ai.enabled) ...<Widget>[
+            const SizedBox(height: KairoSpacing.lg),
+            TextField(
+              controller: _baseUrl,
+              decoration: const InputDecoration(
+                labelText: 'Address',
+                helperText: 'Ollama: http://localhost:11434/v1 · '
+                    'LM Studio: http://localhost:1234/v1',
+              ),
+            ),
+            const SizedBox(height: KairoSpacing.md),
+            TextField(
+              controller: _model,
+              decoration: const InputDecoration(
+                labelText: 'Model',
+                hintText: 'llama3.2',
+              ),
+            ),
+            const SizedBox(height: KairoSpacing.md),
+            TextField(
+              controller: _apiKey,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'API key',
+                helperText: 'Leave empty for a model on this computer.',
+              ),
+            ),
+            const SizedBox(height: KairoSpacing.md),
+            Row(
+              children: <Widget>[
+                const Expanded(child: Text('Write a summary')),
+                DropdownButton<Duration>(
+                  value: AiSettings.reportIntervalChoices
+                          .contains(ai.reportInterval)
+                      ? ai.reportInterval
+                      : AiSettings.defaultReportInterval,
+                  borderRadius: KairoRadius.cardBorderRadius,
+                  onChanged: (Duration? interval) {
+                    if (interval != null) {
+                      _save(_edited.copyWith(reportInterval: interval));
+                    }
+                  },
+                  items: AiSettings.reportIntervalChoices
+                      .map(
+                        (Duration interval) => DropdownMenuItem<Duration>(
+                          value: interval,
+                          child: Text(describeInterval(interval)),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+            const SizedBox(height: KairoSpacing.md),
+            Text(
+              ai.isLocal
+                  ? 'This model runs on your computer. Nothing leaves it.'
+                  : 'How often you complete each reminder will be sent to '
+                      '${Uri.tryParse(ai.baseUrl)?.host ?? 'that address'}.',
+              style: textTheme.bodySmall?.copyWith(
+                color:
+                    ai.isLocal ? KairoColors.textSecondary : KairoColors.error,
+              ),
+            ),
+            const SizedBox(height: KairoSpacing.lg),
+            Row(
+              children: <Widget>[
+                FilledButton(
+                  onPressed: _testing ? null : () => _save(_edited),
+                  child: const Text('Save'),
+                ),
+                const SizedBox(width: KairoSpacing.md),
+                TextButton(
+                  onPressed: _testing ? null : _test,
+                  child: Text(_testing ? 'Testing…' : 'Test connection'),
+                ),
+              ],
+            ),
+            if (_result != null) ...<Widget>[
+              const SizedBox(height: KairoSpacing.md),
+              SelectableText(
+                _result!,
+                style: textTheme.bodySmall?.copyWith(
+                  color: KairoColors.textSecondary,
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _save(AiSettings ai) async {
+    setState(() => _result = null);
+    await ref
+        .read(settingsControllerProvider)
+        .setAi(widget.settings, ai);
+  }
+
+  Future<void> _test() async {
+    setState(() {
+      _testing = true;
+      _result = null;
+    });
+
+    final AiSettings ai = _edited;
+    String outcome;
+    try {
+      final String line = await const KairoAiClient().complete(
+        settings: ai.copyWith(enabled: true),
+        system: coachSystemPrompt,
+        prompt: 'Say hello to someone sitting down at their desk.',
+      );
+      outcome = 'It works. The model said: "$line"';
+    } on KairoAiException catch (error) {
+      outcome = error.message;
+    } on Object catch (error) {
+      outcome = 'That did not work: $error';
+    }
+
+    if (mounted) {
+      setState(() {
+        _testing = false;
+        _result = outcome;
+      });
+    }
   }
 }
 

@@ -78,6 +78,11 @@ class SettingsController {
     return _settings.write(current.copyWith(soundEnabled: enabled));
   }
 
+  /// Sets where coaching messages are written, if anywhere.
+  Future<void> setAi(UserSettings current, AiSettings ai) {
+    return _settings.write(current.copyWith(ai: ai));
+  }
+
   /// Writes everything Kairo knows to a file, and returns where it went.
   Future<File> exportData() => _data.exportToFile();
 

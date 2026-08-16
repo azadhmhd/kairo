@@ -51,7 +51,10 @@ class ReportsScreen extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.all(KairoSpacing.xl),
             children: const <Widget>[
+              _SummaryCard(),
               _StreakCard(),
+              SizedBox(height: KairoSpacing.lg),
+              _OutcomeCounts(),
               SizedBox(height: KairoSpacing.lg),
               _CompletionChart(),
               SizedBox(height: KairoSpacing.lg),
@@ -59,6 +62,165 @@ class ReportsScreen extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The written summary, when there is one. Absent until coaching writes it.
+class _SummaryCard extends ConsumerWidget {
+  const _SummaryCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final HealthReport? report =
+        ref.watch(latestHealthReportProvider).valueOrNull;
+
+    if (report == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: KairoSpacing.lg),
+      child: KairoCard(
+        padding: const EdgeInsets.all(KairoSpacing.xl),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                const Icon(
+                  Icons.auto_awesome_outlined,
+                  color: KairoColors.primary,
+                  size: PrimitiveIconSize.md,
+                ),
+                const SizedBox(width: KairoSpacing.sm),
+                Expanded(
+                  child: Text('Your summary', style: textTheme.titleSmall),
+                ),
+                Text(
+                  _writtenAt(report.generatedAt),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: KairoColors.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: KairoSpacing.md),
+            SelectableText(
+              report.body,
+              style: textTheme.bodyMedium?.copyWith(height: 1.5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _writtenAt(DateTime moment) {
+    final DateTime now = DateTime.now();
+    final String clock = '${moment.hour.toString().padLeft(2, '0')}:'
+        '${moment.minute.toString().padLeft(2, '0')}';
+
+    if (moment.year == now.year &&
+        moment.month == now.month &&
+        moment.day == now.day) {
+      return clock;
+    }
+
+    const List<String> months = <String>[
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${moment.day} ${months[moment.month - 1]}, $clock';
+  }
+}
+
+/// Everything that happened to a reminder, not only the ones that were done.
+class _OutcomeCounts extends ConsumerWidget {
+  const _OutcomeCounts();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final DailyTally totals = ref.watch(reportTotalsProvider);
+
+    return KairoCard(
+      padding: const EdgeInsets.all(KairoSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text('What happened', style: textTheme.titleSmall),
+          const SizedBox(height: KairoSpacing.lg),
+          Row(
+            children: <Widget>[
+              _Count(
+                label: 'Done',
+                value: totals.completed,
+                color: KairoColors.primary,
+              ),
+              _Count(
+                label: 'Ignored',
+                value: totals.missed,
+                color: KairoColors.error,
+              ),
+              _Count(
+                label: 'Not now',
+                value: totals.dismissed,
+                color: KairoColors.textSecondary,
+              ),
+              _Count(
+                label: 'Snoozed',
+                value: totals.snoozed,
+                color: KairoColors.textSecondary,
+              ),
+            ],
+          ),
+          const SizedBox(height: KairoSpacing.md),
+          Text(
+            '${totals.due} reminders came due in this period.',
+            style: textTheme.bodySmall?.copyWith(
+              color: KairoColors.textTertiary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Count extends StatelessWidget {
+  const _Count({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final int value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            '$value',
+            style: textTheme.headlineMedium?.copyWith(color: color),
+          ),
+          const SizedBox(height: KairoSpacing.xxs),
+          Text(
+            label,
+            style: textTheme.bodySmall?.copyWith(
+              color: KairoColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -201,7 +363,7 @@ class _Bar extends StatelessWidget {
       message: day.due == 0
           ? '${_CompletionChart._shortDate(day.day)} · nothing came due'
           : '${_CompletionChart._shortDate(day.day)} · '
-              '${day.completed} of ${day.due}',
+              '${day.completed} of ${day.due} · ${day.missed} ignored',
       child: FractionallySizedBox(
         alignment: Alignment.bottomCenter,
         heightFactor: fraction,
@@ -270,6 +432,14 @@ class _KindBreakdown extends ConsumerWidget {
                               minHeight: KairoSpacing.xs,
                               backgroundColor: KairoColors.surfaceSubtle,
                               color: KairoColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: KairoSpacing.xxs),
+                          Text(
+                            '${tally.completed} done · ${tally.missed} ignored · '
+                            '${tally.dismissed} not now · ${tally.snoozed} snoozed',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: KairoColors.textTertiary,
                             ),
                           ),
                         ],
