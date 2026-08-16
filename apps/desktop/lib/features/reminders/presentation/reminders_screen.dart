@@ -48,6 +48,14 @@ class RemindersScreen extends ConsumerWidget {
           tooltip: 'Back',
         ),
         title: const Text('Reminders'),
+        actions: <Widget>[
+          IconButton(
+            onPressed: () => _addCustom(context, ref),
+            icon: const Icon(Icons.add),
+            tooltip: 'New reminder',
+          ),
+          const SizedBox(width: KairoSpacing.sm),
+        ],
       ),
       body: Center(
         child: ConstrainedBox(
@@ -72,6 +80,134 @@ class RemindersScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Asks the user what to be reminded about, and saves it if they say.
+  Future<void> _addCustom(BuildContext context, WidgetRef ref) async {
+    final _CustomReminderDraft? draft = await showDialog<_CustomReminderDraft>(
+      context: context,
+      builder: (BuildContext context) =>
+          const _CustomReminderDialog(intervalChoices: _intervalChoices),
+    );
+    if (draft == null) {
+      return;
+    }
+
+    await ref.read(reminderRepositoryProvider).upsertDefinition(
+          ReminderDefinition(
+            // The clock rather than a random id: reminders are created by hand,
+            // one at a time, and this sorts in the order they were made.
+            id: 'custom-${DateTime.now().microsecondsSinceEpoch}',
+            kind: ReminderKind.custom,
+            label: draft.label,
+            interval: Duration(minutes: draft.minutes),
+          ),
+        );
+  }
+}
+
+/// What the user filled in on the new reminder dialog.
+class _CustomReminderDraft {
+  const _CustomReminderDraft(this.label, this.minutes);
+
+  final String label;
+  final int minutes;
+}
+
+/// Asks for a reminder's message and how often it should come.
+class _CustomReminderDialog extends StatefulWidget {
+  const _CustomReminderDialog({required this.intervalChoices});
+
+  /// Wide enough for a sentence, so the message is not typed through a slot.
+  static const double _width = 420;
+
+  final List<int> intervalChoices;
+
+  @override
+  State<_CustomReminderDialog> createState() => _CustomReminderDialogState();
+}
+
+class _CustomReminderDialogState extends State<_CustomReminderDialog> {
+  final TextEditingController _label = TextEditingController();
+  int _minutes = 30;
+
+  @override
+  void dispose() {
+    _label.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String label = _label.text.trim();
+
+    return AlertDialog(
+      title: const Text('New reminder'),
+      content: SizedBox(
+        width: _CustomReminderDialog._width,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            TextField(
+              controller: _label,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              maxLength: 120,
+              decoration: const InputDecoration(
+                labelText: 'What should Kairo say?',
+                hintText: 'Take three slow breaths',
+              ),
+              onChanged: (String _) => setState(() {}),
+              onSubmitted: (String _) => _save(),
+            ),
+            const SizedBox(height: KairoSpacing.sm),
+            Row(
+              children: <Widget>[
+                const Text('How often'),
+                const SizedBox(width: KairoSpacing.md),
+                DropdownButton<int>(
+                  value: _minutes,
+                  borderRadius: KairoRadius.cardBorderRadius,
+                  onChanged: (int? minutes) {
+                    if (minutes != null) {
+                      setState(() => _minutes = minutes);
+                    }
+                  },
+                  items: widget.intervalChoices
+                      .map(
+                        (int minutes) => DropdownMenuItem<int>(
+                          value: minutes,
+                          child:
+                              Text(describeInterval(Duration(minutes: minutes))),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: label.isEmpty ? null : _save,
+          child: const Text('Add reminder'),
+        ),
+      ],
+    );
+  }
+
+  void _save() {
+    final String label = _label.text.trim();
+    if (label.isEmpty) {
+      return;
+    }
+    Navigator.of(context).pop(_CustomReminderDraft(label, _minutes));
   }
 }
 
@@ -151,8 +287,52 @@ class _ReminderSettingsRow extends ConsumerWidget {
               definition.copyWith(enabled: enabled),
             ),
           ),
+          // Only the user's own reminders can be removed: deleting one Kairo
+          // ships would seed it again on the next launch, minus its history.
+          if (definition.kind == ReminderKind.custom) ...<Widget>[
+            const SizedBox(width: KairoSpacing.xs),
+            IconButton(
+              onPressed: () => _confirmDelete(context, reminders),
+              icon: const Icon(Icons.delete_outline),
+              color: KairoColors.textTertiary,
+              tooltip: 'Delete reminder',
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    ReminderRepository reminders,
+  ) async {
+    final bool confirmed = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Delete this reminder?'),
+            content: Text(
+              '"${definition.label}" will stop coming, and everything it has '
+              'recorded will be removed from your reports. This cannot be '
+              'undone.',
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(foregroundColor: KairoColors.error),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (confirmed) {
+      await reminders.deleteDefinition(definition.id);
+    }
   }
 }
