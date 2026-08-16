@@ -14,6 +14,9 @@ class DailyTally {
     required this.day,
     required this.due,
     required this.completed,
+    this.missed = 0,
+    this.dismissed = 0,
+    this.snoozed = 0,
   });
 
   /// Local midnight of the day being counted.
@@ -24,6 +27,13 @@ class DailyTally {
 
   /// How many of them the user marked done.
   final int completed;
+
+  /// How many went unanswered until Kairo gave up asking.
+  final int missed;
+
+  final int dismissed;
+
+  final int snoozed;
 
   /// The share of the day's reminders that were completed, from 0 to 1. Zero on
   /// a day nothing came due, which charts better than a gap.
@@ -38,10 +48,14 @@ class DailyTally {
       other is DailyTally &&
       other.day == day &&
       other.due == due &&
-      other.completed == completed;
+      other.completed == completed &&
+      other.missed == missed &&
+      other.dismissed == dismissed &&
+      other.snoozed == snoozed;
 
   @override
-  int get hashCode => Object.hash(day, due, completed);
+  int get hashCode =>
+      Object.hash(day, due, completed, missed, dismissed, snoozed);
 
   @override
   String toString() => 'DailyTally($day, $completed of $due)';
@@ -55,6 +69,9 @@ class KindTally {
     required this.kind,
     required this.due,
     required this.completed,
+    this.missed = 0,
+    this.dismissed = 0,
+    this.snoozed = 0,
   });
 
   /// Which kind of reminder this counts.
@@ -66,6 +83,13 @@ class KindTally {
   /// How many the user marked done.
   final int completed;
 
+  /// How many went unanswered until Kairo gave up asking.
+  final int missed;
+
+  final int dismissed;
+
+  final int snoozed;
+
   /// The share completed, from 0 to 1.
   double get completionRate => due == 0 ? 0 : completed / due;
 
@@ -74,10 +98,14 @@ class KindTally {
       other is KindTally &&
       other.kind == kind &&
       other.due == due &&
-      other.completed == completed;
+      other.completed == completed &&
+      other.missed == missed &&
+      other.dismissed == dismissed &&
+      other.snoozed == snoozed;
 
   @override
-  int get hashCode => Object.hash(kind, due, completed);
+  int get hashCode =>
+      Object.hash(kind, due, completed, missed, dismissed, snoozed);
 
   @override
   String toString() => 'KindTally(${kind.name}, $completed of $due)';

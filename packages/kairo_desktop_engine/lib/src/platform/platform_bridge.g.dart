@@ -184,9 +184,8 @@ class KairoNativeRect {
 
 /// Everything the platform needs in order to create a window.
 ///
-/// Every field is required. Defaults belong to `KairoWindowDescriptor` on the
-/// Dart side, where they can be documented and tested; a schema that also
-/// carries them would be a second place for them to disagree.
+/// Every field is required: defaults belong to `KairoWindowDescriptor`, and a
+/// schema that also carried them would be a second place for them to disagree.
 class KairoNativeWindowSpec {
   KairoNativeWindowSpec({
     required this.entrypoint,
@@ -226,9 +225,6 @@ class KairoNativeWindowSpec {
   KairoNativeWindowLevel level;
 
   /// Whether the window's background is transparent rather than opaque.
-  ///
-  /// This is what lets the character appear to stand on the desktop instead of
-  /// inside a rectangle.
   bool transparent;
 
   /// Whether the platform draws a title bar and frame around the window.
@@ -238,9 +234,6 @@ class KairoNativeWindowSpec {
   bool resizable;
 
   /// Whether clicks fall through the window to whatever is behind it.
-  ///
-  /// A character that could not be clicked through would cover part of the
-  /// screen the user is trying to work in.
   bool ignoresMouseEvents;
 
   /// Whether the window is hidden from the dock, taskbar and window switcher.
@@ -510,9 +503,8 @@ class KairoNativeWindowApi {
 
   /// Whether the window at [handle] is currently on screen.
   ///
-  /// Asked of the platform rather than remembered on the Dart side, because the
-  /// platform can hide a window without being told to — the user closing it,
-  /// or the space it lives on going away.
+  /// Asked of the platform rather than remembered: it can hide a window without
+  /// being told to, when the user closes it or its space goes away.
   Future<bool> isWindowVisible(int handle) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.kairo_desktop_engine.KairoNativeWindowApi.isWindowVisible$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -570,15 +562,11 @@ class KairoNativeWindowApi {
     ;
   }
 
-  /// The usable area of the display the user is working on.
+  /// The usable area of the display the user is working on — the screen holding
+  /// keyboard focus, not the one Kairo launched on.
   ///
-  /// The screen holding the keyboard focus, not a fixed one: a character that
-  /// appeared on the display Kairo happened to launch on would be talking to an
-  /// empty chair. Asked again every time it is needed, because the answer
-  /// changes as the user moves between screens.
-  ///
-  /// Usable excludes the menu bar and the dock, so something standing on the
-  /// bottom of this rectangle is standing on the desktop rather than behind the
+  /// Usable excludes the menu bar and the dock, so something placed on the
+  /// bottom edge of this rectangle sits on the desktop rather than behind the
   /// dock.
   Future<KairoNativeRect> activeDisplayBounds() async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.kairo_desktop_engine.KairoNativeWindowApi.activeDisplayBounds$pigeonVar_messageChannelSuffix';
@@ -616,9 +604,8 @@ class KairoNativeSystemApi {
 
   /// Whether the system starts Kairo when the user logs in.
   ///
-  /// Asked of the system rather than remembered, because the user can revoke it
-  /// in System Settings without Kairo being told, and a switch that shows what
-  /// Kairo last wrote instead of what is true is a switch that lies.
+  /// Asked of the system rather than remembered: the user can revoke it in
+  /// System Settings without Kairo being told.
   Future<bool> launchesAtLogin() async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.kairo_desktop_engine.KairoNativeSystemApi.launchesAtLogin$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -660,15 +647,11 @@ class KairoNativeSystemApi {
 
 /// How one of Kairo's isolates reaches the others.
 ///
-/// Every window Kairo creates runs its own `FlutterEngine`, and so its own
-/// isolate: the main window and the character window are two Dart programs that
-/// happen to share a process. They have no port, no memory and no event bus in
-/// common, so the only path from one to the other is down to the platform and
-/// back up again. This is that path.
+/// Kairo's windows share no memory and no event bus, so the only path between
+/// them is down to the platform and back up. This is that path.
 ///
-/// The payload is text on purpose. The platform is a postman: it should not
-/// need a new schema, and a rebuilt bridge, every time the application finds
-/// something new to say. What the text means belongs to the application.
+/// The payload is text on purpose: the platform is a postman, and should not
+/// need a rebuilt bridge every time the application finds something new to say.
 class KairoNativeRelayApi {
   /// Constructor for [KairoNativeRelayApi]. The [binaryMessenger] named argument is
   /// available for dependency injection. If it is left null, the default
@@ -684,10 +667,8 @@ class KairoNativeRelayApi {
 
   /// Passes [message] to every Kairo isolate except the one that sent it.
   ///
-  /// Broadcast rather than addressed, because Kairo has two isolates and
-  /// addressing would mean teaching each of them the other's window handle for
-  /// no gain. Delivery is best-effort: an isolate that is not listening yet
-  /// misses the message rather than queueing it.
+  /// Broadcast rather than addressed. Delivery is best-effort: an isolate not
+  /// yet listening misses the message rather than queueing it.
   Future<void> relay(String message) async {
     final pigeonVar_channelName = 'dev.flutter.pigeon.kairo_desktop_engine.KairoNativeRelayApi.relay$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(

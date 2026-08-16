@@ -9,6 +9,8 @@
 library;
 
 export 'src/database/kairo_database.dart';
+export 'src/repositories/coach_repository.dart';
+export 'src/repositories/health_report_repository.dart';
 export 'src/repositories/kairo_data_repository.dart';
 export 'src/repositories/reminder_repository.dart';
 export 'src/repositories/reminder_stats_repository.dart';

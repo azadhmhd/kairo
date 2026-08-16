@@ -88,9 +88,66 @@ class UserSettingsTable extends Table {
   /// Whether reminders make a sound.
   BoolColumn get soundEnabled => boolean().withDefault(const Constant(true))();
 
+  BoolColumn get aiEnabled => boolean().withDefault(const Constant(false))();
+
+  TextColumn get aiBaseUrl =>
+      text().withDefault(const Constant(AiSettings.ollamaBaseUrl))();
+
+  TextColumn get aiModel => text().withDefault(const Constant(''))();
+
+  /// The bearer token, or empty for a local model. ponytail: plaintext because
+  /// this file never leaves the machine; keychain when Kairo grows a sync.
+  TextColumn get aiApiKey => text().withDefault(const Constant(''))();
+
+  IntColumn get aiReportSeconds =>
+      integer().withDefault(const Constant(24 * 60 * 60))();
+
   @override
   Set<Column<Object>> get primaryKey => <Column<Object>>{id};
 }
 
 /// The primary key of the single row in [UserSettingsTable].
 const int settingsRowId = 0;
+
+/// What Kairo says for a reminder instead of the user's own wording. Separate
+/// from [ReminderDefinitions] so it can never overwrite what the user typed.
+@DataClassName('CoachLineRow')
+class CoachLines extends Table {
+  TextColumn get definitionId =>
+      text().references(ReminderDefinitions, #id, onDelete: KeyAction.cascade)();
+
+  TextColumn get message => text()();
+
+  TextColumn get stance => textEnum<CoachStance>()();
+
+  DateTimeColumn get generatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => <Column<Object>>{definitionId};
+}
+
+/// What the character says as it walks off. Several per outcome, so the same
+/// answer is not met with the same words every time.
+@DataClassName('CoachReactionRow')
+class CoachReactions extends Table {
+  TextColumn get outcome => textEnum<ReminderOutcome>()();
+
+  TextColumn get message => text()();
+
+  DateTimeColumn get generatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => <Column<Object>>{outcome, message};
+}
+
+/// A written summary, keyed by when it was written — the user chooses how
+/// often that is, and it can be several times an hour.
+@DataClassName('HealthReportRow')
+class HealthReports extends Table {
+  DateTimeColumn get generatedAt => dateTime()();
+
+  TextColumn get body => text()();
+
+  @override
+  Set<Column<Object>> get primaryKey => <Column<Object>>{generatedAt};
+}

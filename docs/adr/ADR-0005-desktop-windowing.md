@@ -86,7 +86,7 @@ at a time without the identity scheme changing.
   (Milestone 2.7), and deliberately not before.
 - Kairo carries native code, and with it the cost of maintaining it per
   platform. This is accepted as the price of the product feeling native.
-- Building requires a code generation step, `melos run generate`. The repository
+- Building requires a code generation step, `./scripts/generate.sh`. The repository
   had no code generation before this decision.
 
 ## Deferred

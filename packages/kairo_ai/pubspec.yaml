@@ -1,0 +1,36 @@
+name: kairo_ai
+description: "Optional coaching messages, written by a model the user chooses."
+version: 0.0.1
+
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: ^3.12.2
+  flutter: ">=3.29.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+
+  kairo_event_bus:
+    path: ../kairo_event_bus
+
+  kairo_reminder_engine:
+    path: ../kairo_reminder_engine
+
+  kairo_scheduler:
+    path: ../kairo_scheduler
+
+  kairo_shared_models:
+    path: ../kairo_shared_models
+
+  kairo_storage:
+    path: ../kairo_storage
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
