@@ -46,6 +46,11 @@ class SettingsRepository {
             launchAtLogin: Value<bool>(settings.launchAtLogin),
             characterEnabled: Value<bool>(settings.characterEnabled),
             soundEnabled: Value<bool>(settings.soundEnabled),
+            aiEnabled: Value<bool>(settings.ai.enabled),
+            aiBaseUrl: Value<String>(settings.ai.baseUrl),
+            aiModel: Value<String>(settings.ai.model),
+            aiApiKey: Value<String>(settings.ai.apiKey),
+            aiReportSeconds: Value<int>(settings.ai.reportInterval.inSeconds),
           ),
         );
   }
@@ -58,6 +63,13 @@ class SettingsRepository {
       launchAtLogin: row.launchAtLogin,
       characterEnabled: row.characterEnabled,
       soundEnabled: row.soundEnabled,
+      ai: AiSettings(
+        enabled: row.aiEnabled,
+        baseUrl: row.aiBaseUrl,
+        model: row.aiModel,
+        apiKey: row.aiApiKey,
+        reportInterval: Duration(seconds: row.aiReportSeconds),
+      ),
     );
   }
 }

@@ -18,7 +18,14 @@ part 'kairo_database.g.dart';
 /// Kairo's local database: one SQLite file on the user's machine, and the only
 /// place Kairo keeps anything.
 @DriftDatabase(
-  tables: <Type>[ReminderDefinitions, ReminderOccurrences, UserSettingsTable],
+  tables: <Type>[
+    ReminderDefinitions,
+    ReminderOccurrences,
+    UserSettingsTable,
+    CoachLines,
+    CoachReactions,
+    HealthReports,
+  ],
 )
 class KairoDatabase extends _$KairoDatabase {
   /// Opens the database in the application's support directory.
@@ -29,11 +36,36 @@ class KairoDatabase extends _$KairoDatabase {
   KairoDatabase.inMemory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) => m.createAll(),
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 2) {
+            await m.createTable(coachLines);
+            await m.addColumn(userSettingsTable, userSettingsTable.aiEnabled);
+            await m.addColumn(userSettingsTable, userSettingsTable.aiBaseUrl);
+            await m.addColumn(userSettingsTable, userSettingsTable.aiModel);
+            await m.addColumn(userSettingsTable, userSettingsTable.aiApiKey);
+          }
+          if (from < 3) {
+            await m.createTable(healthReports);
+          }
+          if (from < 4) {
+            // Rebuilt rather than altered: the key changed from the day to the
+            // moment, and a summary is regenerated content, not history.
+            await m.deleteTable(healthReports.actualTableName);
+            await m.createTable(healthReports);
+            await m.addColumn(
+              userSettingsTable,
+              userSettingsTable.aiReportSeconds,
+            );
+          }
+          if (from < 5) {
+            await m.createTable(coachReactions);
+          }
+        },
         beforeOpen: (OpeningDetails details) async {
           // Drift leaves foreign keys off unless asked, and this schema relies
           // on them to take a reminder's history with it when it is deleted.

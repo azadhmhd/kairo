@@ -21,20 +21,22 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Install Melos
-        run: dart pub global activate melos
-
-      - name: Bootstrap
-        run: melos bootstrap
+      - name: Get dependencies
+        run: flutter pub get
 
       - name: Check formatting
         run: dart format --set-exit-if-changed .
 
       - name: Analyze
-        run: melos run analyze
+        run: flutter analyze
 
       - name: Test
-        run: melos run test
+        run: |
+          for package in packages/*/; do
+            if [ -d "${package}test" ]; then
+              (cd "$package" && flutter test)
+            fi
+          done
 
       - name: Build macOS
         run: flutter build macos --debug

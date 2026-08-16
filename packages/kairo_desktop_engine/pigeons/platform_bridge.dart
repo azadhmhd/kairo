@@ -1,7 +1,7 @@
 // The contract between Kairo's Dart code and the native window host.
 //
 // This file is a schema, not application code. It is never imported at
-// runtime; `melos run generate` reads it and writes both sides of the bridge:
+// runtime; `./scripts/generate.sh` reads it and writes both sides of the bridge:
 //
 //   lib/src/platform/platform_bridge.g.dart
 //   ../../apps/desktop/macos/Runner/PlatformBridge.g.swift

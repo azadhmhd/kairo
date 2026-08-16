@@ -45,7 +45,10 @@ class ReminderStatsRepository {
       '''
       SELECT d.kind AS kind,
              COUNT(*) AS due,
-             SUM(CASE WHEN o.outcome = ? THEN 1 ELSE 0 END) AS completed
+             SUM(CASE WHEN o.outcome = ? THEN 1 ELSE 0 END) AS completed,
+             SUM(CASE WHEN o.outcome = ? THEN 1 ELSE 0 END) AS missed,
+             SUM(CASE WHEN o.outcome = ? THEN 1 ELSE 0 END) AS dismissed,
+             SUM(CASE WHEN o.outcome = ? THEN 1 ELSE 0 END) AS snoozed
       FROM reminder_occurrences o
       JOIN reminder_definitions d ON d.id = o.definition_id
       WHERE o.due_at >= ? AND o.due_at < ?
@@ -53,6 +56,9 @@ class ReminderStatsRepository {
       ''',
       variables: <Variable<Object>>[
         Variable<String>(ReminderOutcome.completed.name),
+        Variable<String>(ReminderOutcome.missed.name),
+        Variable<String>(ReminderOutcome.dismissed.name),
+        Variable<String>(ReminderOutcome.snoozed.name),
         Variable<DateTime>(from),
         Variable<DateTime>(to),
       ],
@@ -71,6 +77,9 @@ class ReminderStatsRepository {
         ),
         due: row.read<int>('due'),
         completed: row.read<int>('completed'),
+        missed: row.read<int>('missed'),
+        dismissed: row.read<int>('dismissed'),
+        snoozed: row.read<int>('snoozed'),
       );
     }).toList();
   }
@@ -87,7 +96,10 @@ class ReminderStatsRepository {
       '''
       SELECT date(due_at, 'unixepoch', 'localtime') AS day,
              COUNT(*) AS due,
-             SUM(CASE WHEN outcome = ? THEN 1 ELSE 0 END) AS completed
+             SUM(CASE WHEN outcome = ? THEN 1 ELSE 0 END) AS completed,
+             SUM(CASE WHEN outcome = ? THEN 1 ELSE 0 END) AS missed,
+             SUM(CASE WHEN outcome = ? THEN 1 ELSE 0 END) AS dismissed,
+             SUM(CASE WHEN outcome = ? THEN 1 ELSE 0 END) AS snoozed
       FROM reminder_occurrences
       WHERE due_at >= ? AND due_at < ?
       GROUP BY day
@@ -95,6 +107,9 @@ class ReminderStatsRepository {
       ''',
       variables: <Variable<Object>>[
         Variable<String>(ReminderOutcome.completed.name),
+        Variable<String>(ReminderOutcome.missed.name),
+        Variable<String>(ReminderOutcome.dismissed.name),
+        Variable<String>(ReminderOutcome.snoozed.name),
         Variable<DateTime>(from),
         Variable<DateTime>(to),
       ],
@@ -109,6 +124,9 @@ class ReminderStatsRepository {
       day: DateTime.parse(row.read<String>('day')),
       due: row.read<int>('due'),
       completed: row.read<int>('completed'),
+      missed: row.read<int>('missed'),
+      dismissed: row.read<int>('dismissed'),
+      snoozed: row.read<int>('snoozed'),
     );
   }
 }

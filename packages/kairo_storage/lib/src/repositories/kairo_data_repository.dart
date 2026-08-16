@@ -18,10 +18,17 @@ class KairoDataRepository {
 
   final KairoDatabase _database;
 
-  /// Writes everything Kairo knows to a JSON file, and returns where it went.
-  ///
-  /// Plain JSON rather than a copy of the database file, so the user can read
-  /// exactly what was kept in a text editor.
+  /// The columns an export leaves out. An export is a file the user moves and
+  /// attaches to things; the API key must not travel with it.
+  static const Set<String> _withheldColumns = <String>{
+    'ai_enabled',
+    'ai_base_url',
+    'ai_model',
+    'ai_api_key',
+  };
+
+  /// Writes everything Kairo knows about the user to a JSON file, and returns
+  /// where it went. Coach lines and AI settings are excluded.
   Future<File> exportToFile() async {
     final Map<String, Object?> contents = <String, Object?>{
       'exportedAt': DateTime.now().toIso8601String(),
@@ -47,13 +54,16 @@ class KairoDataRepository {
   /// starts. The user's history is not.
   Future<void> deleteEverything() async {
     await _database.transaction(() async {
+      await _database.delete(_database.healthReports).go();
+      await _database.delete(_database.coachLines).go();
       await _database.delete(_database.reminderOccurrences).go();
       await _database.delete(_database.reminderDefinitions).go();
       await _database.delete(_database.userSettingsTable).go();
     });
   }
 
-  /// Every row of [table], as maps of column name to value.
+  /// Every row of [table], as maps of column name to value, less
+  /// [_withheldColumns].
   Future<List<Map<String, Object?>>> _rowsOf(
     TableInfo<Table, Object> table,
   ) async {
@@ -63,7 +73,15 @@ class KairoDataRepository {
           readsFrom: <ResultSetImplementation<Object, Object>>{table},
         )
         .get();
-    return rows.map((QueryRow row) => row.data).toList();
+    return rows
+        .map(
+          (QueryRow row) => <String, Object?>{
+            for (final MapEntry<String, Object?> column in row.data.entries)
+              if (!_withheldColumns.contains(column.key))
+                column.key: column.value,
+          },
+        )
+        .toList();
   }
 }
 

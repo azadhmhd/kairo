@@ -31,7 +31,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
-  # Generates kairo_database.g.dart. Run `melos run generate` after changing a
+  # Generates kairo_database.g.dart. Run ./scripts/generate.sh after changing a
   # table.
   drift_dev: ^2.28.0
   build_runner: ^2.4.13

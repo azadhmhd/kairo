@@ -130,7 +130,7 @@ Win32
 
 Monorepo
 
-Melos
+Pub workspaces
 
 Flutter Version
 

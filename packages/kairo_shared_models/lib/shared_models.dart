@@ -4,7 +4,10 @@
 /// or whether it may fire, live in the engine that owns them.
 library;
 
+export 'src/ai_settings.dart';
+export 'src/coach_line.dart';
 export 'src/daily_window.dart';
+export 'src/health_report.dart';
 export 'src/reminder_definition.dart';
 export 'src/reminder_occurrence.dart';
 export 'src/tallies.dart';

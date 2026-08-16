@@ -985,6 +985,69 @@ class $UserSettingsTableTable extends UserSettingsTable
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _aiEnabledMeta = const VerificationMeta(
+    'aiEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> aiEnabled = GeneratedColumn<bool>(
+    'ai_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ai_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _aiBaseUrlMeta = const VerificationMeta(
+    'aiBaseUrl',
+  );
+  @override
+  late final GeneratedColumn<String> aiBaseUrl = GeneratedColumn<String>(
+    'ai_base_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(AiSettings.ollamaBaseUrl),
+  );
+  static const VerificationMeta _aiModelMeta = const VerificationMeta(
+    'aiModel',
+  );
+  @override
+  late final GeneratedColumn<String> aiModel = GeneratedColumn<String>(
+    'ai_model',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _aiApiKeyMeta = const VerificationMeta(
+    'aiApiKey',
+  );
+  @override
+  late final GeneratedColumn<String> aiApiKey = GeneratedColumn<String>(
+    'ai_api_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _aiReportSecondsMeta = const VerificationMeta(
+    'aiReportSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> aiReportSeconds = GeneratedColumn<int>(
+    'ai_report_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(24 * 60 * 60),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -993,6 +1056,11 @@ class $UserSettingsTableTable extends UserSettingsTable
     launchAtLogin,
     characterEnabled,
     soundEnabled,
+    aiEnabled,
+    aiBaseUrl,
+    aiModel,
+    aiApiKey,
+    aiReportSeconds,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1054,6 +1122,39 @@ class $UserSettingsTableTable extends UserSettingsTable
         ),
       );
     }
+    if (data.containsKey('ai_enabled')) {
+      context.handle(
+        _aiEnabledMeta,
+        aiEnabled.isAcceptableOrUnknown(data['ai_enabled']!, _aiEnabledMeta),
+      );
+    }
+    if (data.containsKey('ai_base_url')) {
+      context.handle(
+        _aiBaseUrlMeta,
+        aiBaseUrl.isAcceptableOrUnknown(data['ai_base_url']!, _aiBaseUrlMeta),
+      );
+    }
+    if (data.containsKey('ai_model')) {
+      context.handle(
+        _aiModelMeta,
+        aiModel.isAcceptableOrUnknown(data['ai_model']!, _aiModelMeta),
+      );
+    }
+    if (data.containsKey('ai_api_key')) {
+      context.handle(
+        _aiApiKeyMeta,
+        aiApiKey.isAcceptableOrUnknown(data['ai_api_key']!, _aiApiKeyMeta),
+      );
+    }
+    if (data.containsKey('ai_report_seconds')) {
+      context.handle(
+        _aiReportSecondsMeta,
+        aiReportSeconds.isAcceptableOrUnknown(
+          data['ai_report_seconds']!,
+          _aiReportSecondsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1087,6 +1188,26 @@ class $UserSettingsTableTable extends UserSettingsTable
         DriftSqlType.bool,
         data['${effectivePrefix}sound_enabled'],
       )!,
+      aiEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ai_enabled'],
+      )!,
+      aiBaseUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ai_base_url'],
+      )!,
+      aiModel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ai_model'],
+      )!,
+      aiApiKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ai_api_key'],
+      )!,
+      aiReportSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ai_report_seconds'],
+      )!,
     );
   }
 
@@ -1114,6 +1235,14 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
 
   /// Whether reminders make a sound.
   final bool soundEnabled;
+  final bool aiEnabled;
+  final String aiBaseUrl;
+  final String aiModel;
+
+  /// The bearer token, or empty for a local model. ponytail: plaintext because
+  /// this file never leaves the machine; keychain when Kairo grows a sync.
+  final String aiApiKey;
+  final int aiReportSeconds;
   const UserSettingsRow({
     required this.id,
     this.quietFromMinute,
@@ -1121,6 +1250,11 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
     required this.launchAtLogin,
     required this.characterEnabled,
     required this.soundEnabled,
+    required this.aiEnabled,
+    required this.aiBaseUrl,
+    required this.aiModel,
+    required this.aiApiKey,
+    required this.aiReportSeconds,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1135,6 +1269,11 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
     map['launch_at_login'] = Variable<bool>(launchAtLogin);
     map['character_enabled'] = Variable<bool>(characterEnabled);
     map['sound_enabled'] = Variable<bool>(soundEnabled);
+    map['ai_enabled'] = Variable<bool>(aiEnabled);
+    map['ai_base_url'] = Variable<String>(aiBaseUrl);
+    map['ai_model'] = Variable<String>(aiModel);
+    map['ai_api_key'] = Variable<String>(aiApiKey);
+    map['ai_report_seconds'] = Variable<int>(aiReportSeconds);
     return map;
   }
 
@@ -1150,6 +1289,11 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
       launchAtLogin: Value(launchAtLogin),
       characterEnabled: Value(characterEnabled),
       soundEnabled: Value(soundEnabled),
+      aiEnabled: Value(aiEnabled),
+      aiBaseUrl: Value(aiBaseUrl),
+      aiModel: Value(aiModel),
+      aiApiKey: Value(aiApiKey),
+      aiReportSeconds: Value(aiReportSeconds),
     );
   }
 
@@ -1165,6 +1309,11 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
       launchAtLogin: serializer.fromJson<bool>(json['launchAtLogin']),
       characterEnabled: serializer.fromJson<bool>(json['characterEnabled']),
       soundEnabled: serializer.fromJson<bool>(json['soundEnabled']),
+      aiEnabled: serializer.fromJson<bool>(json['aiEnabled']),
+      aiBaseUrl: serializer.fromJson<String>(json['aiBaseUrl']),
+      aiModel: serializer.fromJson<String>(json['aiModel']),
+      aiApiKey: serializer.fromJson<String>(json['aiApiKey']),
+      aiReportSeconds: serializer.fromJson<int>(json['aiReportSeconds']),
     );
   }
   @override
@@ -1177,6 +1326,11 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
       'launchAtLogin': serializer.toJson<bool>(launchAtLogin),
       'characterEnabled': serializer.toJson<bool>(characterEnabled),
       'soundEnabled': serializer.toJson<bool>(soundEnabled),
+      'aiEnabled': serializer.toJson<bool>(aiEnabled),
+      'aiBaseUrl': serializer.toJson<String>(aiBaseUrl),
+      'aiModel': serializer.toJson<String>(aiModel),
+      'aiApiKey': serializer.toJson<String>(aiApiKey),
+      'aiReportSeconds': serializer.toJson<int>(aiReportSeconds),
     };
   }
 
@@ -1187,6 +1341,11 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
     bool? launchAtLogin,
     bool? characterEnabled,
     bool? soundEnabled,
+    bool? aiEnabled,
+    String? aiBaseUrl,
+    String? aiModel,
+    String? aiApiKey,
+    int? aiReportSeconds,
   }) => UserSettingsRow(
     id: id ?? this.id,
     quietFromMinute: quietFromMinute.present
@@ -1198,6 +1357,11 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
     launchAtLogin: launchAtLogin ?? this.launchAtLogin,
     characterEnabled: characterEnabled ?? this.characterEnabled,
     soundEnabled: soundEnabled ?? this.soundEnabled,
+    aiEnabled: aiEnabled ?? this.aiEnabled,
+    aiBaseUrl: aiBaseUrl ?? this.aiBaseUrl,
+    aiModel: aiModel ?? this.aiModel,
+    aiApiKey: aiApiKey ?? this.aiApiKey,
+    aiReportSeconds: aiReportSeconds ?? this.aiReportSeconds,
   );
   UserSettingsRow copyWithCompanion(UserSettingsTableCompanion data) {
     return UserSettingsRow(
@@ -1217,6 +1381,13 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
       soundEnabled: data.soundEnabled.present
           ? data.soundEnabled.value
           : this.soundEnabled,
+      aiEnabled: data.aiEnabled.present ? data.aiEnabled.value : this.aiEnabled,
+      aiBaseUrl: data.aiBaseUrl.present ? data.aiBaseUrl.value : this.aiBaseUrl,
+      aiModel: data.aiModel.present ? data.aiModel.value : this.aiModel,
+      aiApiKey: data.aiApiKey.present ? data.aiApiKey.value : this.aiApiKey,
+      aiReportSeconds: data.aiReportSeconds.present
+          ? data.aiReportSeconds.value
+          : this.aiReportSeconds,
     );
   }
 
@@ -1228,7 +1399,12 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
           ..write('quietToMinute: $quietToMinute, ')
           ..write('launchAtLogin: $launchAtLogin, ')
           ..write('characterEnabled: $characterEnabled, ')
-          ..write('soundEnabled: $soundEnabled')
+          ..write('soundEnabled: $soundEnabled, ')
+          ..write('aiEnabled: $aiEnabled, ')
+          ..write('aiBaseUrl: $aiBaseUrl, ')
+          ..write('aiModel: $aiModel, ')
+          ..write('aiApiKey: $aiApiKey, ')
+          ..write('aiReportSeconds: $aiReportSeconds')
           ..write(')'))
         .toString();
   }
@@ -1241,6 +1417,11 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
     launchAtLogin,
     characterEnabled,
     soundEnabled,
+    aiEnabled,
+    aiBaseUrl,
+    aiModel,
+    aiApiKey,
+    aiReportSeconds,
   );
   @override
   bool operator ==(Object other) =>
@@ -1251,7 +1432,12 @@ class UserSettingsRow extends DataClass implements Insertable<UserSettingsRow> {
           other.quietToMinute == this.quietToMinute &&
           other.launchAtLogin == this.launchAtLogin &&
           other.characterEnabled == this.characterEnabled &&
-          other.soundEnabled == this.soundEnabled);
+          other.soundEnabled == this.soundEnabled &&
+          other.aiEnabled == this.aiEnabled &&
+          other.aiBaseUrl == this.aiBaseUrl &&
+          other.aiModel == this.aiModel &&
+          other.aiApiKey == this.aiApiKey &&
+          other.aiReportSeconds == this.aiReportSeconds);
 }
 
 class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
@@ -1261,6 +1447,11 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
   final Value<bool> launchAtLogin;
   final Value<bool> characterEnabled;
   final Value<bool> soundEnabled;
+  final Value<bool> aiEnabled;
+  final Value<String> aiBaseUrl;
+  final Value<String> aiModel;
+  final Value<String> aiApiKey;
+  final Value<int> aiReportSeconds;
   const UserSettingsTableCompanion({
     this.id = const Value.absent(),
     this.quietFromMinute = const Value.absent(),
@@ -1268,6 +1459,11 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
     this.launchAtLogin = const Value.absent(),
     this.characterEnabled = const Value.absent(),
     this.soundEnabled = const Value.absent(),
+    this.aiEnabled = const Value.absent(),
+    this.aiBaseUrl = const Value.absent(),
+    this.aiModel = const Value.absent(),
+    this.aiApiKey = const Value.absent(),
+    this.aiReportSeconds = const Value.absent(),
   });
   UserSettingsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -1276,6 +1472,11 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
     this.launchAtLogin = const Value.absent(),
     this.characterEnabled = const Value.absent(),
     this.soundEnabled = const Value.absent(),
+    this.aiEnabled = const Value.absent(),
+    this.aiBaseUrl = const Value.absent(),
+    this.aiModel = const Value.absent(),
+    this.aiApiKey = const Value.absent(),
+    this.aiReportSeconds = const Value.absent(),
   });
   static Insertable<UserSettingsRow> custom({
     Expression<int>? id,
@@ -1284,6 +1485,11 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
     Expression<bool>? launchAtLogin,
     Expression<bool>? characterEnabled,
     Expression<bool>? soundEnabled,
+    Expression<bool>? aiEnabled,
+    Expression<String>? aiBaseUrl,
+    Expression<String>? aiModel,
+    Expression<String>? aiApiKey,
+    Expression<int>? aiReportSeconds,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1292,6 +1498,11 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
       if (launchAtLogin != null) 'launch_at_login': launchAtLogin,
       if (characterEnabled != null) 'character_enabled': characterEnabled,
       if (soundEnabled != null) 'sound_enabled': soundEnabled,
+      if (aiEnabled != null) 'ai_enabled': aiEnabled,
+      if (aiBaseUrl != null) 'ai_base_url': aiBaseUrl,
+      if (aiModel != null) 'ai_model': aiModel,
+      if (aiApiKey != null) 'ai_api_key': aiApiKey,
+      if (aiReportSeconds != null) 'ai_report_seconds': aiReportSeconds,
     });
   }
 
@@ -1302,6 +1513,11 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
     Value<bool>? launchAtLogin,
     Value<bool>? characterEnabled,
     Value<bool>? soundEnabled,
+    Value<bool>? aiEnabled,
+    Value<String>? aiBaseUrl,
+    Value<String>? aiModel,
+    Value<String>? aiApiKey,
+    Value<int>? aiReportSeconds,
   }) {
     return UserSettingsTableCompanion(
       id: id ?? this.id,
@@ -1310,6 +1526,11 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
       launchAtLogin: launchAtLogin ?? this.launchAtLogin,
       characterEnabled: characterEnabled ?? this.characterEnabled,
       soundEnabled: soundEnabled ?? this.soundEnabled,
+      aiEnabled: aiEnabled ?? this.aiEnabled,
+      aiBaseUrl: aiBaseUrl ?? this.aiBaseUrl,
+      aiModel: aiModel ?? this.aiModel,
+      aiApiKey: aiApiKey ?? this.aiApiKey,
+      aiReportSeconds: aiReportSeconds ?? this.aiReportSeconds,
     );
   }
 
@@ -1334,6 +1555,21 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
     if (soundEnabled.present) {
       map['sound_enabled'] = Variable<bool>(soundEnabled.value);
     }
+    if (aiEnabled.present) {
+      map['ai_enabled'] = Variable<bool>(aiEnabled.value);
+    }
+    if (aiBaseUrl.present) {
+      map['ai_base_url'] = Variable<String>(aiBaseUrl.value);
+    }
+    if (aiModel.present) {
+      map['ai_model'] = Variable<String>(aiModel.value);
+    }
+    if (aiApiKey.present) {
+      map['ai_api_key'] = Variable<String>(aiApiKey.value);
+    }
+    if (aiReportSeconds.present) {
+      map['ai_report_seconds'] = Variable<int>(aiReportSeconds.value);
+    }
     return map;
   }
 
@@ -1345,7 +1581,851 @@ class UserSettingsTableCompanion extends UpdateCompanion<UserSettingsRow> {
           ..write('quietToMinute: $quietToMinute, ')
           ..write('launchAtLogin: $launchAtLogin, ')
           ..write('characterEnabled: $characterEnabled, ')
-          ..write('soundEnabled: $soundEnabled')
+          ..write('soundEnabled: $soundEnabled, ')
+          ..write('aiEnabled: $aiEnabled, ')
+          ..write('aiBaseUrl: $aiBaseUrl, ')
+          ..write('aiModel: $aiModel, ')
+          ..write('aiApiKey: $aiApiKey, ')
+          ..write('aiReportSeconds: $aiReportSeconds')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CoachLinesTable extends CoachLines
+    with TableInfo<$CoachLinesTable, CoachLineRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CoachLinesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _definitionIdMeta = const VerificationMeta(
+    'definitionId',
+  );
+  @override
+  late final GeneratedColumn<String> definitionId = GeneratedColumn<String>(
+    'definition_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES reminder_definitions (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _messageMeta = const VerificationMeta(
+    'message',
+  );
+  @override
+  late final GeneratedColumn<String> message = GeneratedColumn<String>(
+    'message',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<CoachStance, String> stance =
+      GeneratedColumn<String>(
+        'stance',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<CoachStance>($CoachLinesTable.$converterstance);
+  static const VerificationMeta _generatedAtMeta = const VerificationMeta(
+    'generatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> generatedAt = GeneratedColumn<DateTime>(
+    'generated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    definitionId,
+    message,
+    stance,
+    generatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'coach_lines';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CoachLineRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('definition_id')) {
+      context.handle(
+        _definitionIdMeta,
+        definitionId.isAcceptableOrUnknown(
+          data['definition_id']!,
+          _definitionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_definitionIdMeta);
+    }
+    if (data.containsKey('message')) {
+      context.handle(
+        _messageMeta,
+        message.isAcceptableOrUnknown(data['message']!, _messageMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_messageMeta);
+    }
+    if (data.containsKey('generated_at')) {
+      context.handle(
+        _generatedAtMeta,
+        generatedAt.isAcceptableOrUnknown(
+          data['generated_at']!,
+          _generatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_generatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {definitionId};
+  @override
+  CoachLineRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CoachLineRow(
+      definitionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}definition_id'],
+      )!,
+      message: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}message'],
+      )!,
+      stance: $CoachLinesTable.$converterstance.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}stance'],
+        )!,
+      ),
+      generatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}generated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CoachLinesTable createAlias(String alias) {
+    return $CoachLinesTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<CoachStance, String, String> $converterstance =
+      const EnumNameConverter<CoachStance>(CoachStance.values);
+}
+
+class CoachLineRow extends DataClass implements Insertable<CoachLineRow> {
+  final String definitionId;
+  final String message;
+  final CoachStance stance;
+  final DateTime generatedAt;
+  const CoachLineRow({
+    required this.definitionId,
+    required this.message,
+    required this.stance,
+    required this.generatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['definition_id'] = Variable<String>(definitionId);
+    map['message'] = Variable<String>(message);
+    {
+      map['stance'] = Variable<String>(
+        $CoachLinesTable.$converterstance.toSql(stance),
+      );
+    }
+    map['generated_at'] = Variable<DateTime>(generatedAt);
+    return map;
+  }
+
+  CoachLinesCompanion toCompanion(bool nullToAbsent) {
+    return CoachLinesCompanion(
+      definitionId: Value(definitionId),
+      message: Value(message),
+      stance: Value(stance),
+      generatedAt: Value(generatedAt),
+    );
+  }
+
+  factory CoachLineRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CoachLineRow(
+      definitionId: serializer.fromJson<String>(json['definitionId']),
+      message: serializer.fromJson<String>(json['message']),
+      stance: $CoachLinesTable.$converterstance.fromJson(
+        serializer.fromJson<String>(json['stance']),
+      ),
+      generatedAt: serializer.fromJson<DateTime>(json['generatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'definitionId': serializer.toJson<String>(definitionId),
+      'message': serializer.toJson<String>(message),
+      'stance': serializer.toJson<String>(
+        $CoachLinesTable.$converterstance.toJson(stance),
+      ),
+      'generatedAt': serializer.toJson<DateTime>(generatedAt),
+    };
+  }
+
+  CoachLineRow copyWith({
+    String? definitionId,
+    String? message,
+    CoachStance? stance,
+    DateTime? generatedAt,
+  }) => CoachLineRow(
+    definitionId: definitionId ?? this.definitionId,
+    message: message ?? this.message,
+    stance: stance ?? this.stance,
+    generatedAt: generatedAt ?? this.generatedAt,
+  );
+  CoachLineRow copyWithCompanion(CoachLinesCompanion data) {
+    return CoachLineRow(
+      definitionId: data.definitionId.present
+          ? data.definitionId.value
+          : this.definitionId,
+      message: data.message.present ? data.message.value : this.message,
+      stance: data.stance.present ? data.stance.value : this.stance,
+      generatedAt: data.generatedAt.present
+          ? data.generatedAt.value
+          : this.generatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoachLineRow(')
+          ..write('definitionId: $definitionId, ')
+          ..write('message: $message, ')
+          ..write('stance: $stance, ')
+          ..write('generatedAt: $generatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(definitionId, message, stance, generatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CoachLineRow &&
+          other.definitionId == this.definitionId &&
+          other.message == this.message &&
+          other.stance == this.stance &&
+          other.generatedAt == this.generatedAt);
+}
+
+class CoachLinesCompanion extends UpdateCompanion<CoachLineRow> {
+  final Value<String> definitionId;
+  final Value<String> message;
+  final Value<CoachStance> stance;
+  final Value<DateTime> generatedAt;
+  final Value<int> rowid;
+  const CoachLinesCompanion({
+    this.definitionId = const Value.absent(),
+    this.message = const Value.absent(),
+    this.stance = const Value.absent(),
+    this.generatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CoachLinesCompanion.insert({
+    required String definitionId,
+    required String message,
+    required CoachStance stance,
+    required DateTime generatedAt,
+    this.rowid = const Value.absent(),
+  }) : definitionId = Value(definitionId),
+       message = Value(message),
+       stance = Value(stance),
+       generatedAt = Value(generatedAt);
+  static Insertable<CoachLineRow> custom({
+    Expression<String>? definitionId,
+    Expression<String>? message,
+    Expression<String>? stance,
+    Expression<DateTime>? generatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (definitionId != null) 'definition_id': definitionId,
+      if (message != null) 'message': message,
+      if (stance != null) 'stance': stance,
+      if (generatedAt != null) 'generated_at': generatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CoachLinesCompanion copyWith({
+    Value<String>? definitionId,
+    Value<String>? message,
+    Value<CoachStance>? stance,
+    Value<DateTime>? generatedAt,
+    Value<int>? rowid,
+  }) {
+    return CoachLinesCompanion(
+      definitionId: definitionId ?? this.definitionId,
+      message: message ?? this.message,
+      stance: stance ?? this.stance,
+      generatedAt: generatedAt ?? this.generatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (definitionId.present) {
+      map['definition_id'] = Variable<String>(definitionId.value);
+    }
+    if (message.present) {
+      map['message'] = Variable<String>(message.value);
+    }
+    if (stance.present) {
+      map['stance'] = Variable<String>(
+        $CoachLinesTable.$converterstance.toSql(stance.value),
+      );
+    }
+    if (generatedAt.present) {
+      map['generated_at'] = Variable<DateTime>(generatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoachLinesCompanion(')
+          ..write('definitionId: $definitionId, ')
+          ..write('message: $message, ')
+          ..write('stance: $stance, ')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CoachReactionsTable extends CoachReactions
+    with TableInfo<$CoachReactionsTable, CoachReactionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CoachReactionsTable(this.attachedDatabase, [this._alias]);
+  @override
+  late final GeneratedColumnWithTypeConverter<ReminderOutcome, String> outcome =
+      GeneratedColumn<String>(
+        'outcome',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<ReminderOutcome>($CoachReactionsTable.$converteroutcome);
+  static const VerificationMeta _messageMeta = const VerificationMeta(
+    'message',
+  );
+  @override
+  late final GeneratedColumn<String> message = GeneratedColumn<String>(
+    'message',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _generatedAtMeta = const VerificationMeta(
+    'generatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> generatedAt = GeneratedColumn<DateTime>(
+    'generated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [outcome, message, generatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'coach_reactions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CoachReactionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('message')) {
+      context.handle(
+        _messageMeta,
+        message.isAcceptableOrUnknown(data['message']!, _messageMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_messageMeta);
+    }
+    if (data.containsKey('generated_at')) {
+      context.handle(
+        _generatedAtMeta,
+        generatedAt.isAcceptableOrUnknown(
+          data['generated_at']!,
+          _generatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_generatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {outcome, message};
+  @override
+  CoachReactionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CoachReactionRow(
+      outcome: $CoachReactionsTable.$converteroutcome.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}outcome'],
+        )!,
+      ),
+      message: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}message'],
+      )!,
+      generatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}generated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CoachReactionsTable createAlias(String alias) {
+    return $CoachReactionsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<ReminderOutcome, String, String> $converteroutcome =
+      const EnumNameConverter<ReminderOutcome>(ReminderOutcome.values);
+}
+
+class CoachReactionRow extends DataClass
+    implements Insertable<CoachReactionRow> {
+  final ReminderOutcome outcome;
+  final String message;
+  final DateTime generatedAt;
+  const CoachReactionRow({
+    required this.outcome,
+    required this.message,
+    required this.generatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    {
+      map['outcome'] = Variable<String>(
+        $CoachReactionsTable.$converteroutcome.toSql(outcome),
+      );
+    }
+    map['message'] = Variable<String>(message);
+    map['generated_at'] = Variable<DateTime>(generatedAt);
+    return map;
+  }
+
+  CoachReactionsCompanion toCompanion(bool nullToAbsent) {
+    return CoachReactionsCompanion(
+      outcome: Value(outcome),
+      message: Value(message),
+      generatedAt: Value(generatedAt),
+    );
+  }
+
+  factory CoachReactionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CoachReactionRow(
+      outcome: $CoachReactionsTable.$converteroutcome.fromJson(
+        serializer.fromJson<String>(json['outcome']),
+      ),
+      message: serializer.fromJson<String>(json['message']),
+      generatedAt: serializer.fromJson<DateTime>(json['generatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'outcome': serializer.toJson<String>(
+        $CoachReactionsTable.$converteroutcome.toJson(outcome),
+      ),
+      'message': serializer.toJson<String>(message),
+      'generatedAt': serializer.toJson<DateTime>(generatedAt),
+    };
+  }
+
+  CoachReactionRow copyWith({
+    ReminderOutcome? outcome,
+    String? message,
+    DateTime? generatedAt,
+  }) => CoachReactionRow(
+    outcome: outcome ?? this.outcome,
+    message: message ?? this.message,
+    generatedAt: generatedAt ?? this.generatedAt,
+  );
+  CoachReactionRow copyWithCompanion(CoachReactionsCompanion data) {
+    return CoachReactionRow(
+      outcome: data.outcome.present ? data.outcome.value : this.outcome,
+      message: data.message.present ? data.message.value : this.message,
+      generatedAt: data.generatedAt.present
+          ? data.generatedAt.value
+          : this.generatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoachReactionRow(')
+          ..write('outcome: $outcome, ')
+          ..write('message: $message, ')
+          ..write('generatedAt: $generatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(outcome, message, generatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CoachReactionRow &&
+          other.outcome == this.outcome &&
+          other.message == this.message &&
+          other.generatedAt == this.generatedAt);
+}
+
+class CoachReactionsCompanion extends UpdateCompanion<CoachReactionRow> {
+  final Value<ReminderOutcome> outcome;
+  final Value<String> message;
+  final Value<DateTime> generatedAt;
+  final Value<int> rowid;
+  const CoachReactionsCompanion({
+    this.outcome = const Value.absent(),
+    this.message = const Value.absent(),
+    this.generatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CoachReactionsCompanion.insert({
+    required ReminderOutcome outcome,
+    required String message,
+    required DateTime generatedAt,
+    this.rowid = const Value.absent(),
+  }) : outcome = Value(outcome),
+       message = Value(message),
+       generatedAt = Value(generatedAt);
+  static Insertable<CoachReactionRow> custom({
+    Expression<String>? outcome,
+    Expression<String>? message,
+    Expression<DateTime>? generatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (outcome != null) 'outcome': outcome,
+      if (message != null) 'message': message,
+      if (generatedAt != null) 'generated_at': generatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CoachReactionsCompanion copyWith({
+    Value<ReminderOutcome>? outcome,
+    Value<String>? message,
+    Value<DateTime>? generatedAt,
+    Value<int>? rowid,
+  }) {
+    return CoachReactionsCompanion(
+      outcome: outcome ?? this.outcome,
+      message: message ?? this.message,
+      generatedAt: generatedAt ?? this.generatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (outcome.present) {
+      map['outcome'] = Variable<String>(
+        $CoachReactionsTable.$converteroutcome.toSql(outcome.value),
+      );
+    }
+    if (message.present) {
+      map['message'] = Variable<String>(message.value);
+    }
+    if (generatedAt.present) {
+      map['generated_at'] = Variable<DateTime>(generatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoachReactionsCompanion(')
+          ..write('outcome: $outcome, ')
+          ..write('message: $message, ')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HealthReportsTable extends HealthReports
+    with TableInfo<$HealthReportsTable, HealthReportRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HealthReportsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _generatedAtMeta = const VerificationMeta(
+    'generatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> generatedAt = GeneratedColumn<DateTime>(
+    'generated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [generatedAt, body];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'health_reports';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HealthReportRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('generated_at')) {
+      context.handle(
+        _generatedAtMeta,
+        generatedAt.isAcceptableOrUnknown(
+          data['generated_at']!,
+          _generatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_generatedAtMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {generatedAt};
+  @override
+  HealthReportRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HealthReportRow(
+      generatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}generated_at'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+    );
+  }
+
+  @override
+  $HealthReportsTable createAlias(String alias) {
+    return $HealthReportsTable(attachedDatabase, alias);
+  }
+}
+
+class HealthReportRow extends DataClass implements Insertable<HealthReportRow> {
+  final DateTime generatedAt;
+  final String body;
+  const HealthReportRow({required this.generatedAt, required this.body});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['generated_at'] = Variable<DateTime>(generatedAt);
+    map['body'] = Variable<String>(body);
+    return map;
+  }
+
+  HealthReportsCompanion toCompanion(bool nullToAbsent) {
+    return HealthReportsCompanion(
+      generatedAt: Value(generatedAt),
+      body: Value(body),
+    );
+  }
+
+  factory HealthReportRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HealthReportRow(
+      generatedAt: serializer.fromJson<DateTime>(json['generatedAt']),
+      body: serializer.fromJson<String>(json['body']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'generatedAt': serializer.toJson<DateTime>(generatedAt),
+      'body': serializer.toJson<String>(body),
+    };
+  }
+
+  HealthReportRow copyWith({DateTime? generatedAt, String? body}) =>
+      HealthReportRow(
+        generatedAt: generatedAt ?? this.generatedAt,
+        body: body ?? this.body,
+      );
+  HealthReportRow copyWithCompanion(HealthReportsCompanion data) {
+    return HealthReportRow(
+      generatedAt: data.generatedAt.present
+          ? data.generatedAt.value
+          : this.generatedAt,
+      body: data.body.present ? data.body.value : this.body,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HealthReportRow(')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('body: $body')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(generatedAt, body);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HealthReportRow &&
+          other.generatedAt == this.generatedAt &&
+          other.body == this.body);
+}
+
+class HealthReportsCompanion extends UpdateCompanion<HealthReportRow> {
+  final Value<DateTime> generatedAt;
+  final Value<String> body;
+  final Value<int> rowid;
+  const HealthReportsCompanion({
+    this.generatedAt = const Value.absent(),
+    this.body = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HealthReportsCompanion.insert({
+    required DateTime generatedAt,
+    required String body,
+    this.rowid = const Value.absent(),
+  }) : generatedAt = Value(generatedAt),
+       body = Value(body);
+  static Insertable<HealthReportRow> custom({
+    Expression<DateTime>? generatedAt,
+    Expression<String>? body,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (generatedAt != null) 'generated_at': generatedAt,
+      if (body != null) 'body': body,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HealthReportsCompanion copyWith({
+    Value<DateTime>? generatedAt,
+    Value<String>? body,
+    Value<int>? rowid,
+  }) {
+    return HealthReportsCompanion(
+      generatedAt: generatedAt ?? this.generatedAt,
+      body: body ?? this.body,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (generatedAt.present) {
+      map['generated_at'] = Variable<DateTime>(generatedAt.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HealthReportsCompanion(')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('body: $body, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -1360,6 +2440,9 @@ abstract class _$KairoDatabase extends GeneratedDatabase {
       $ReminderOccurrencesTable(this);
   late final $UserSettingsTableTable userSettingsTable =
       $UserSettingsTableTable(this);
+  late final $CoachLinesTable coachLines = $CoachLinesTable(this);
+  late final $CoachReactionsTable coachReactions = $CoachReactionsTable(this);
+  late final $HealthReportsTable healthReports = $HealthReportsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1368,6 +2451,9 @@ abstract class _$KairoDatabase extends GeneratedDatabase {
     reminderDefinitions,
     reminderOccurrences,
     userSettingsTable,
+    coachLines,
+    coachReactions,
+    healthReports,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -1377,6 +2463,13 @@ abstract class _$KairoDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('reminder_occurrences', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'reminder_definitions',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('coach_lines', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -1437,6 +2530,24 @@ final class $$ReminderDefinitionsTableReferences
     final cache = $_typedResult.readTableOrNull(
       _reminderOccurrencesRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CoachLinesTable, List<CoachLineRow>>
+  _coachLinesRefsTable(_$KairoDatabase db) => MultiTypedResultKey.fromTable(
+    db.coachLines,
+    aliasName: 'reminder_definitions__id__coach_lines__definition_id',
+  );
+
+  $$CoachLinesTableProcessedTableManager get coachLinesRefs {
+    final manager = $$CoachLinesTableTableManager(
+      $_db,
+      $_db.coachLines,
+    ).filter((f) => f.definitionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_coachLinesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -1504,6 +2615,31 @@ class $$ReminderDefinitionsTableFilterComposer
           }) => $$ReminderOccurrencesTableFilterComposer(
             $db: $db,
             $table: $db.reminderOccurrences,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> coachLinesRefs(
+    Expression<bool> Function($$CoachLinesTableFilterComposer f) f,
+  ) {
+    final $$CoachLinesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.coachLines,
+      getReferencedColumn: (t) => t.definitionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CoachLinesTableFilterComposer(
+            $db: $db,
+            $table: $db.coachLines,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1620,6 +2756,31 @@ class $$ReminderDefinitionsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> coachLinesRefs<T extends Object>(
+    Expression<T> Function($$CoachLinesTableAnnotationComposer a) f,
+  ) {
+    final $$CoachLinesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.coachLines,
+      getReferencedColumn: (t) => t.definitionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CoachLinesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.coachLines,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ReminderDefinitionsTableTableManager
@@ -1635,7 +2796,10 @@ class $$ReminderDefinitionsTableTableManager
           $$ReminderDefinitionsTableUpdateCompanionBuilder,
           (ReminderDefinitionRow, $$ReminderDefinitionsTableReferences),
           ReminderDefinitionRow,
-          PrefetchHooks Function({bool reminderOccurrencesRefs})
+          PrefetchHooks Function({
+            bool reminderOccurrencesRefs,
+            bool coachLinesRefs,
+          })
         > {
   $$ReminderDefinitionsTableTableManager(
     _$KairoDatabase db,
@@ -1704,40 +2868,63 @@ class $$ReminderDefinitionsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({reminderOccurrencesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (reminderOccurrencesRefs) db.reminderOccurrences,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (reminderOccurrencesRefs)
-                    await $_getPrefetchedData<
-                      ReminderDefinitionRow,
-                      $ReminderDefinitionsTable,
-                      ReminderOccurrenceRow
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ReminderDefinitionsTableReferences
-                          ._reminderOccurrencesRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$ReminderDefinitionsTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).reminderOccurrencesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where(
-                            (e) => e.definitionId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({reminderOccurrencesRefs = false, coachLinesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (reminderOccurrencesRefs) db.reminderOccurrences,
+                    if (coachLinesRefs) db.coachLines,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (reminderOccurrencesRefs)
+                        await $_getPrefetchedData<
+                          ReminderDefinitionRow,
+                          $ReminderDefinitionsTable,
+                          ReminderOccurrenceRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ReminderDefinitionsTableReferences
+                              ._reminderOccurrencesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ReminderDefinitionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reminderOccurrencesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.definitionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (coachLinesRefs)
+                        await $_getPrefetchedData<
+                          ReminderDefinitionRow,
+                          $ReminderDefinitionsTable,
+                          CoachLineRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ReminderDefinitionsTableReferences
+                              ._coachLinesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ReminderDefinitionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).coachLinesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.definitionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -1754,7 +2941,10 @@ typedef $$ReminderDefinitionsTableProcessedTableManager =
       $$ReminderDefinitionsTableUpdateCompanionBuilder,
       (ReminderDefinitionRow, $$ReminderDefinitionsTableReferences),
       ReminderDefinitionRow,
-      PrefetchHooks Function({bool reminderOccurrencesRefs})
+      PrefetchHooks Function({
+        bool reminderOccurrencesRefs,
+        bool coachLinesRefs,
+      })
     >;
 typedef $$ReminderOccurrencesTableCreateCompanionBuilder =
     ReminderOccurrencesCompanion Function({
@@ -2107,6 +3297,11 @@ typedef $$UserSettingsTableTableCreateCompanionBuilder =
       Value<bool> launchAtLogin,
       Value<bool> characterEnabled,
       Value<bool> soundEnabled,
+      Value<bool> aiEnabled,
+      Value<String> aiBaseUrl,
+      Value<String> aiModel,
+      Value<String> aiApiKey,
+      Value<int> aiReportSeconds,
     });
 typedef $$UserSettingsTableTableUpdateCompanionBuilder =
     UserSettingsTableCompanion Function({
@@ -2116,6 +3311,11 @@ typedef $$UserSettingsTableTableUpdateCompanionBuilder =
       Value<bool> launchAtLogin,
       Value<bool> characterEnabled,
       Value<bool> soundEnabled,
+      Value<bool> aiEnabled,
+      Value<String> aiBaseUrl,
+      Value<String> aiModel,
+      Value<String> aiApiKey,
+      Value<int> aiReportSeconds,
     });
 
 class $$UserSettingsTableTableFilterComposer
@@ -2154,6 +3354,31 @@ class $$UserSettingsTableTableFilterComposer
 
   ColumnFilters<bool> get soundEnabled => $composableBuilder(
     column: $table.soundEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get aiEnabled => $composableBuilder(
+    column: $table.aiEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get aiBaseUrl => $composableBuilder(
+    column: $table.aiBaseUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get aiModel => $composableBuilder(
+    column: $table.aiModel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get aiApiKey => $composableBuilder(
+    column: $table.aiApiKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get aiReportSeconds => $composableBuilder(
+    column: $table.aiReportSeconds,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2196,6 +3421,31 @@ class $$UserSettingsTableTableOrderingComposer
     column: $table.soundEnabled,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get aiEnabled => $composableBuilder(
+    column: $table.aiEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get aiBaseUrl => $composableBuilder(
+    column: $table.aiBaseUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get aiModel => $composableBuilder(
+    column: $table.aiModel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get aiApiKey => $composableBuilder(
+    column: $table.aiApiKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get aiReportSeconds => $composableBuilder(
+    column: $table.aiReportSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UserSettingsTableTableAnnotationComposer
@@ -2232,6 +3482,23 @@ class $$UserSettingsTableTableAnnotationComposer
 
   GeneratedColumn<bool> get soundEnabled => $composableBuilder(
     column: $table.soundEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get aiEnabled =>
+      $composableBuilder(column: $table.aiEnabled, builder: (column) => column);
+
+  GeneratedColumn<String> get aiBaseUrl =>
+      $composableBuilder(column: $table.aiBaseUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get aiModel =>
+      $composableBuilder(column: $table.aiModel, builder: (column) => column);
+
+  GeneratedColumn<String> get aiApiKey =>
+      $composableBuilder(column: $table.aiApiKey, builder: (column) => column);
+
+  GeneratedColumn<int> get aiReportSeconds => $composableBuilder(
+    column: $table.aiReportSeconds,
     builder: (column) => column,
   );
 }
@@ -2282,6 +3549,11 @@ class $$UserSettingsTableTableTableManager
                 Value<bool> launchAtLogin = const Value.absent(),
                 Value<bool> characterEnabled = const Value.absent(),
                 Value<bool> soundEnabled = const Value.absent(),
+                Value<bool> aiEnabled = const Value.absent(),
+                Value<String> aiBaseUrl = const Value.absent(),
+                Value<String> aiModel = const Value.absent(),
+                Value<String> aiApiKey = const Value.absent(),
+                Value<int> aiReportSeconds = const Value.absent(),
               }) => UserSettingsTableCompanion(
                 id: id,
                 quietFromMinute: quietFromMinute,
@@ -2289,6 +3561,11 @@ class $$UserSettingsTableTableTableManager
                 launchAtLogin: launchAtLogin,
                 characterEnabled: characterEnabled,
                 soundEnabled: soundEnabled,
+                aiEnabled: aiEnabled,
+                aiBaseUrl: aiBaseUrl,
+                aiModel: aiModel,
+                aiApiKey: aiApiKey,
+                aiReportSeconds: aiReportSeconds,
               ),
           createCompanionCallback:
               ({
@@ -2298,6 +3575,11 @@ class $$UserSettingsTableTableTableManager
                 Value<bool> launchAtLogin = const Value.absent(),
                 Value<bool> characterEnabled = const Value.absent(),
                 Value<bool> soundEnabled = const Value.absent(),
+                Value<bool> aiEnabled = const Value.absent(),
+                Value<String> aiBaseUrl = const Value.absent(),
+                Value<String> aiModel = const Value.absent(),
+                Value<String> aiApiKey = const Value.absent(),
+                Value<int> aiReportSeconds = const Value.absent(),
               }) => UserSettingsTableCompanion.insert(
                 id: id,
                 quietFromMinute: quietFromMinute,
@@ -2305,6 +3587,11 @@ class $$UserSettingsTableTableTableManager
                 launchAtLogin: launchAtLogin,
                 characterEnabled: characterEnabled,
                 soundEnabled: soundEnabled,
+                aiEnabled: aiEnabled,
+                aiBaseUrl: aiBaseUrl,
+                aiModel: aiModel,
+                aiApiKey: aiApiKey,
+                aiReportSeconds: aiReportSeconds,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -2335,6 +3622,632 @@ typedef $$UserSettingsTableTableProcessedTableManager =
       UserSettingsRow,
       PrefetchHooks Function()
     >;
+typedef $$CoachLinesTableCreateCompanionBuilder =
+    CoachLinesCompanion Function({
+      required String definitionId,
+      required String message,
+      required CoachStance stance,
+      required DateTime generatedAt,
+      Value<int> rowid,
+    });
+typedef $$CoachLinesTableUpdateCompanionBuilder =
+    CoachLinesCompanion Function({
+      Value<String> definitionId,
+      Value<String> message,
+      Value<CoachStance> stance,
+      Value<DateTime> generatedAt,
+      Value<int> rowid,
+    });
+
+final class $$CoachLinesTableReferences
+    extends BaseReferences<_$KairoDatabase, $CoachLinesTable, CoachLineRow> {
+  $$CoachLinesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ReminderDefinitionsTable _definitionIdTable(_$KairoDatabase db) => db
+      .reminderDefinitions
+      .createAlias('coach_lines__definition_id__reminder_definitions__id');
+
+  $$ReminderDefinitionsTableProcessedTableManager get definitionId {
+    final $_column = $_itemColumn<String>('definition_id')!;
+
+    final manager = $$ReminderDefinitionsTableTableManager(
+      $_db,
+      $_db.reminderDefinitions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_definitionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CoachLinesTableFilterComposer
+    extends Composer<_$KairoDatabase, $CoachLinesTable> {
+  $$CoachLinesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<CoachStance, CoachStance, String> get stance =>
+      $composableBuilder(
+        column: $table.stance,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ReminderDefinitionsTableFilterComposer get definitionId {
+    final $$ReminderDefinitionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.definitionId,
+      referencedTable: $db.reminderDefinitions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReminderDefinitionsTableFilterComposer(
+            $db: $db,
+            $table: $db.reminderDefinitions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CoachLinesTableOrderingComposer
+    extends Composer<_$KairoDatabase, $CoachLinesTable> {
+  $$CoachLinesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get stance => $composableBuilder(
+    column: $table.stance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ReminderDefinitionsTableOrderingComposer get definitionId {
+    final $$ReminderDefinitionsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.definitionId,
+          referencedTable: $db.reminderDefinitions,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ReminderDefinitionsTableOrderingComposer(
+                $db: $db,
+                $table: $db.reminderDefinitions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$CoachLinesTableAnnotationComposer
+    extends Composer<_$KairoDatabase, $CoachLinesTable> {
+  $$CoachLinesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get message =>
+      $composableBuilder(column: $table.message, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<CoachStance, String> get stance =>
+      $composableBuilder(column: $table.stance, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => column,
+  );
+
+  $$ReminderDefinitionsTableAnnotationComposer get definitionId {
+    final $$ReminderDefinitionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.definitionId,
+          referencedTable: $db.reminderDefinitions,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ReminderDefinitionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.reminderDefinitions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$CoachLinesTableTableManager
+    extends
+        RootTableManager<
+          _$KairoDatabase,
+          $CoachLinesTable,
+          CoachLineRow,
+          $$CoachLinesTableFilterComposer,
+          $$CoachLinesTableOrderingComposer,
+          $$CoachLinesTableAnnotationComposer,
+          $$CoachLinesTableCreateCompanionBuilder,
+          $$CoachLinesTableUpdateCompanionBuilder,
+          (CoachLineRow, $$CoachLinesTableReferences),
+          CoachLineRow,
+          PrefetchHooks Function({bool definitionId})
+        > {
+  $$CoachLinesTableTableManager(_$KairoDatabase db, $CoachLinesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CoachLinesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CoachLinesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CoachLinesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> definitionId = const Value.absent(),
+                Value<String> message = const Value.absent(),
+                Value<CoachStance> stance = const Value.absent(),
+                Value<DateTime> generatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CoachLinesCompanion(
+                definitionId: definitionId,
+                message: message,
+                stance: stance,
+                generatedAt: generatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String definitionId,
+                required String message,
+                required CoachStance stance,
+                required DateTime generatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CoachLinesCompanion.insert(
+                definitionId: definitionId,
+                message: message,
+                stance: stance,
+                generatedAt: generatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CoachLinesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({definitionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (definitionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.definitionId,
+                                referencedTable: $$CoachLinesTableReferences
+                                    ._definitionIdTable(db),
+                                referencedColumn: $$CoachLinesTableReferences
+                                    ._definitionIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CoachLinesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$KairoDatabase,
+      $CoachLinesTable,
+      CoachLineRow,
+      $$CoachLinesTableFilterComposer,
+      $$CoachLinesTableOrderingComposer,
+      $$CoachLinesTableAnnotationComposer,
+      $$CoachLinesTableCreateCompanionBuilder,
+      $$CoachLinesTableUpdateCompanionBuilder,
+      (CoachLineRow, $$CoachLinesTableReferences),
+      CoachLineRow,
+      PrefetchHooks Function({bool definitionId})
+    >;
+typedef $$CoachReactionsTableCreateCompanionBuilder =
+    CoachReactionsCompanion Function({
+      required ReminderOutcome outcome,
+      required String message,
+      required DateTime generatedAt,
+      Value<int> rowid,
+    });
+typedef $$CoachReactionsTableUpdateCompanionBuilder =
+    CoachReactionsCompanion Function({
+      Value<ReminderOutcome> outcome,
+      Value<String> message,
+      Value<DateTime> generatedAt,
+      Value<int> rowid,
+    });
+
+class $$CoachReactionsTableFilterComposer
+    extends Composer<_$KairoDatabase, $CoachReactionsTable> {
+  $$CoachReactionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnWithTypeConverterFilters<ReminderOutcome, ReminderOutcome, String>
+  get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CoachReactionsTableOrderingComposer
+    extends Composer<_$KairoDatabase, $CoachReactionsTable> {
+  $$CoachReactionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CoachReactionsTableAnnotationComposer
+    extends Composer<_$KairoDatabase, $CoachReactionsTable> {
+  $$CoachReactionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumnWithTypeConverter<ReminderOutcome, String> get outcome =>
+      $composableBuilder(column: $table.outcome, builder: (column) => column);
+
+  GeneratedColumn<String> get message =>
+      $composableBuilder(column: $table.message, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$CoachReactionsTableTableManager
+    extends
+        RootTableManager<
+          _$KairoDatabase,
+          $CoachReactionsTable,
+          CoachReactionRow,
+          $$CoachReactionsTableFilterComposer,
+          $$CoachReactionsTableOrderingComposer,
+          $$CoachReactionsTableAnnotationComposer,
+          $$CoachReactionsTableCreateCompanionBuilder,
+          $$CoachReactionsTableUpdateCompanionBuilder,
+          (
+            CoachReactionRow,
+            BaseReferences<
+              _$KairoDatabase,
+              $CoachReactionsTable,
+              CoachReactionRow
+            >,
+          ),
+          CoachReactionRow,
+          PrefetchHooks Function()
+        > {
+  $$CoachReactionsTableTableManager(
+    _$KairoDatabase db,
+    $CoachReactionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CoachReactionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CoachReactionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CoachReactionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<ReminderOutcome> outcome = const Value.absent(),
+                Value<String> message = const Value.absent(),
+                Value<DateTime> generatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CoachReactionsCompanion(
+                outcome: outcome,
+                message: message,
+                generatedAt: generatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required ReminderOutcome outcome,
+                required String message,
+                required DateTime generatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CoachReactionsCompanion.insert(
+                outcome: outcome,
+                message: message,
+                generatedAt: generatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CoachReactionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$KairoDatabase,
+      $CoachReactionsTable,
+      CoachReactionRow,
+      $$CoachReactionsTableFilterComposer,
+      $$CoachReactionsTableOrderingComposer,
+      $$CoachReactionsTableAnnotationComposer,
+      $$CoachReactionsTableCreateCompanionBuilder,
+      $$CoachReactionsTableUpdateCompanionBuilder,
+      (
+        CoachReactionRow,
+        BaseReferences<_$KairoDatabase, $CoachReactionsTable, CoachReactionRow>,
+      ),
+      CoachReactionRow,
+      PrefetchHooks Function()
+    >;
+typedef $$HealthReportsTableCreateCompanionBuilder =
+    HealthReportsCompanion Function({
+      required DateTime generatedAt,
+      required String body,
+      Value<int> rowid,
+    });
+typedef $$HealthReportsTableUpdateCompanionBuilder =
+    HealthReportsCompanion Function({
+      Value<DateTime> generatedAt,
+      Value<String> body,
+      Value<int> rowid,
+    });
+
+class $$HealthReportsTableFilterComposer
+    extends Composer<_$KairoDatabase, $HealthReportsTable> {
+  $$HealthReportsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HealthReportsTableOrderingComposer
+    extends Composer<_$KairoDatabase, $HealthReportsTable> {
+  $$HealthReportsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HealthReportsTableAnnotationComposer
+    extends Composer<_$KairoDatabase, $HealthReportsTable> {
+  $$HealthReportsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+}
+
+class $$HealthReportsTableTableManager
+    extends
+        RootTableManager<
+          _$KairoDatabase,
+          $HealthReportsTable,
+          HealthReportRow,
+          $$HealthReportsTableFilterComposer,
+          $$HealthReportsTableOrderingComposer,
+          $$HealthReportsTableAnnotationComposer,
+          $$HealthReportsTableCreateCompanionBuilder,
+          $$HealthReportsTableUpdateCompanionBuilder,
+          (
+            HealthReportRow,
+            BaseReferences<
+              _$KairoDatabase,
+              $HealthReportsTable,
+              HealthReportRow
+            >,
+          ),
+          HealthReportRow,
+          PrefetchHooks Function()
+        > {
+  $$HealthReportsTableTableManager(
+    _$KairoDatabase db,
+    $HealthReportsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HealthReportsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HealthReportsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HealthReportsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<DateTime> generatedAt = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HealthReportsCompanion(
+                generatedAt: generatedAt,
+                body: body,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required DateTime generatedAt,
+                required String body,
+                Value<int> rowid = const Value.absent(),
+              }) => HealthReportsCompanion.insert(
+                generatedAt: generatedAt,
+                body: body,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HealthReportsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$KairoDatabase,
+      $HealthReportsTable,
+      HealthReportRow,
+      $$HealthReportsTableFilterComposer,
+      $$HealthReportsTableOrderingComposer,
+      $$HealthReportsTableAnnotationComposer,
+      $$HealthReportsTableCreateCompanionBuilder,
+      $$HealthReportsTableUpdateCompanionBuilder,
+      (
+        HealthReportRow,
+        BaseReferences<_$KairoDatabase, $HealthReportsTable, HealthReportRow>,
+      ),
+      HealthReportRow,
+      PrefetchHooks Function()
+    >;
 
 class $KairoDatabaseManager {
   final _$KairoDatabase _db;
@@ -2345,4 +4258,10 @@ class $KairoDatabaseManager {
       $$ReminderOccurrencesTableTableManager(_db, _db.reminderOccurrences);
   $$UserSettingsTableTableTableManager get userSettingsTable =>
       $$UserSettingsTableTableTableManager(_db, _db.userSettingsTable);
+  $$CoachLinesTableTableManager get coachLines =>
+      $$CoachLinesTableTableManager(_db, _db.coachLines);
+  $$CoachReactionsTableTableManager get coachReactions =>
+      $$CoachReactionsTableTableManager(_db, _db.coachReactions);
+  $$HealthReportsTableTableManager get healthReports =>
+      $$HealthReportsTableTableManager(_db, _db.healthReports);
 }

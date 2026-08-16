@@ -22,23 +22,26 @@ class KairoReminderEngine {
   KairoReminderEngine({
     required ReminderRepository reminders,
     required SettingsRepository settings,
+    required CoachRepository coach,
     required KairoScheduler scheduler,
     required KairoWorkflowEngine workflowEngine,
     required KairoEventBus eventBus,
   })  : _reminders = reminders,
         _settings = settings,
+        _coach = coach,
         _scheduler = scheduler,
         _workflowEngine = workflowEngine,
         _eventBus = eventBus;
 
   /// How long an unanswered reminder waits before asking again.
-  ///
-  /// A reminder the user walked away from is not the same as one they turned
-  /// down, so it keeps asking rather than waiting out its whole interval.
   static const Duration nagInterval = Duration(minutes: 1);
+
+  /// How many times one firing is asked about before it is recorded as missed.
+  static const int maxAsks = 5;
 
   final ReminderRepository _reminders;
   final SettingsRepository _settings;
+  final CoachRepository _coach;
   final KairoScheduler _scheduler;
   final KairoWorkflowEngine _workflowEngine;
   final KairoEventBus _eventBus;
@@ -46,9 +49,11 @@ class KairoReminderEngine {
   final Map<String, ReminderDefinition> _definitions =
       <String, ReminderDefinition>{};
 
-  /// The reminder each definition is still waiting on an answer for.
-  final Map<String, ReminderOccurrence> _unanswered =
-      <String, ReminderOccurrence>{};
+  /// The firing each reminder is still waiting on an answer for.
+  final Map<String, _Asking> _unanswered = <String, _Asking>{};
+
+  /// The coach's wording, by reminder id, for the reminders that have any.
+  final Map<String, String> _coachLines = <String, String>{};
 
   /// The schedule ids this engine put in the scheduler. Tracked so turning a
   /// reminder off removes its schedule and nothing else — the scheduler is
@@ -60,6 +65,7 @@ class KairoReminderEngine {
   StreamSubscription<List<ReminderDefinition>>? _definitionsSubscription;
   StreamSubscription<UserSettings>? _settingsSubscription;
   StreamSubscription<ReminderAnsweredEvent>? _answeredSubscription;
+  StreamSubscription<Map<String, String>>? _coachSubscription;
 
   /// The user's reminders as this engine last saw them.
   Iterable<ReminderDefinition> get definitions => _definitions.values;
@@ -84,6 +90,14 @@ class KairoReminderEngine {
         _eventBus.on<ReminderAnsweredEvent>().listen(_onAnswered);
     _definitionsSubscription =
         _reminders.watchDefinitions().listen(_syncSchedules);
+
+    _coachSubscription = _coach.watchMessages().listen(
+      (Map<String, String> lines) {
+        _coachLines
+          ..clear()
+          ..addAll(lines);
+      },
+    );
   }
 
   /// Stops following the database and removes the schedules this engine added.
@@ -91,9 +105,11 @@ class KairoReminderEngine {
     await _definitionsSubscription?.cancel();
     await _settingsSubscription?.cancel();
     await _answeredSubscription?.cancel();
+    await _coachSubscription?.cancel();
     _definitionsSubscription = null;
     _settingsSubscription = null;
     _answeredSubscription = null;
+    _coachSubscription = null;
 
     for (final String id in _scheduled) {
       _scheduler.remove(id);
@@ -101,6 +117,7 @@ class KairoReminderEngine {
     _scheduled.clear();
     _definitions.clear();
     _unanswered.clear();
+    _coachLines.clear();
   }
 
   /// The rule that turns a schedule coming due into a reminder being shown.
@@ -132,25 +149,30 @@ class KairoReminderEngine {
   bool _isNotDuringQuietHours(ScheduleDueEvent event) =>
       !_currentSettings.isQuietAt(event.dueAt);
 
-  /// Records the reminder and announces it.
-  ///
-  /// A reminder still waiting for an answer is asked again rather than started
-  /// over, and the next asking is [nagInterval] away instead of a whole
-  /// interval. A second occurrence would mark the first missed and count one
-  /// reminder as two, so the user's history would degrade the longer they took
-  /// to answer.
+  /// A firing still waiting for an answer is asked again rather than started
+  /// over, which would mark the first missed and count one reminder as several.
   Future<void> _announce(ScheduleDueEvent event) async {
     final ReminderDefinition? definition = _definitions[event.scheduleId];
     if (definition == null) {
       return;
     }
 
-    ReminderOccurrence? occurrence = _unanswered[definition.id];
-    if (occurrence == null) {
-      // Anything still unanswered has been overtaken by this one, and would
-      // otherwise stay pending forever.
-      await _reminders.expirePending(definition.id, event.dueAt);
+    final _Asking? asking = _unanswered[definition.id];
 
+    // Asked enough. Recorded as ignored and left until its next turn, so the
+    // history says what happened instead of staying pending forever.
+    if (asking != null && asking.asks >= maxAsks) {
+      await _reminders.expirePending(definition.id, event.dueAt);
+      _unanswered.remove(definition.id);
+      return;
+    }
+
+    final ReminderOccurrence occurrence;
+    if (asking != null) {
+      asking.asks++;
+      occurrence = asking.occurrence;
+    } else {
+      await _reminders.expirePending(definition.id, event.dueAt);
       occurrence = ReminderOccurrence(
         // Derived rather than random: a reminder cannot come due twice at the
         // same instant, and this id is readable in the database.
@@ -159,26 +181,30 @@ class KairoReminderEngine {
         dueAt: event.dueAt,
       );
       await _reminders.recordDue(occurrence);
-      _unanswered[definition.id] = occurrence;
+      _unanswered[definition.id] = _Asking(occurrence);
     }
 
-    // Measured from now rather than from [event.dueAt], which is already in the
-    // past and can be hours stale after the machine has slept. Nagging from
-    // there would spend a tick catching up for every minute of lag.
+    // From now, not from [event.dueAt], which can be hours stale after the
+    // machine has slept: nagging from there spends a tick per minute of lag.
     _scheduler.rescheduleTo(definition.id, DateTime.now().add(nagInterval));
     _eventBus.publish(
-      ReminderDueEvent(definition: definition, occurrence: occurrence),
+      ReminderDueEvent(definition: _worded(definition), occurrence: occurrence),
     );
+  }
+
+  /// The reminder as it should be said now: the coach's line if there is one,
+  /// standing in front of the user's own label, which is never overwritten.
+  ReminderDefinition _worded(ReminderDefinition definition) {
+    final String? coached = _coachLines[definition.id];
+    return coached == null ? definition : definition.copyWith(label: coached);
   }
 
   /// Puts a reminder back on its usual rhythm once it has been answered.
   ///
-  /// Snoozing is left alone: `ReminderService` sets that firing itself, and the
-  /// bus delivers this after it has, so rescheduling here would overwrite the
-  /// snooze with a full interval.
+  /// Snoozing is skipped: `ReminderService` sets that one, after this runs.
   void _onAnswered(ReminderAnsweredEvent event) {
     final String definitionId = event.occurrence.definitionId;
-    if (_unanswered[definitionId]?.id != event.occurrence.id) {
+    if (_unanswered[definitionId]?.occurrence.id != event.occurrence.id) {
       return;
     }
     _unanswered.remove(definitionId);
@@ -229,14 +255,20 @@ class KairoReminderEngine {
     }
 
     // A reminder switched off or deleted mid-question stops being asked about.
-    _unanswered.removeWhere(
-      (String id, ReminderOccurrence _) => !wanted.contains(id),
-    );
+    _unanswered.removeWhere((String id, _Asking _) => !wanted.contains(id));
 
     _scheduled
       ..clear()
       ..addAll(wanted);
   }
+}
+
+/// One firing waiting for an answer, and how many times it has been asked.
+class _Asking {
+  _Asking(this.occurrence);
+
+  final ReminderOccurrence occurrence;
+  int asks = 1;
 }
 
 /// The application's [KairoReminderEngine].
@@ -246,6 +278,7 @@ final Provider<KairoReminderEngine> reminderEngineProvider =
     final KairoReminderEngine engine = KairoReminderEngine(
       reminders: ref.watch(reminderRepositoryProvider),
       settings: ref.watch(settingsRepositoryProvider),
+      coach: ref.watch(coachRepositoryProvider),
       scheduler: ref.watch(schedulerProvider),
       workflowEngine: ref.watch(workflowEngineProvider),
       eventBus: ref.watch(eventBusProvider),

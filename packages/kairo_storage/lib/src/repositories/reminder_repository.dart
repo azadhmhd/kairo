@@ -37,6 +37,15 @@ class ReminderRepository {
             rows.map(_toDefinition).toList());
   }
 
+  /// The reminder [id], or null if there is none.
+  Future<ReminderDefinition?> definition(String id) async {
+    final ReminderDefinitionRow? row =
+        await (_database.select(_database.reminderDefinitions)
+              ..where(($ReminderDefinitionsTable t) => t.id.equals(id)))
+            .getSingleOrNull();
+    return row == null ? null : _toDefinition(row);
+  }
+
   /// Writes [definition], replacing any reminder that already has its id.
   Future<void> upsertDefinition(ReminderDefinition definition) {
     return _database
@@ -83,6 +92,25 @@ class ReminderRepository {
         respondedAt: Value<DateTime?>(respondedAt),
       ),
     );
+  }
+
+  /// How the last [limit] settled firings of [definitionId] ended, newest
+  /// first. Pending ones are excluded: they have not been ignored yet.
+  Future<List<ReminderOutcome>> recentOutcomes(
+    String definitionId, {
+    required int limit,
+  }) async {
+    final List<ReminderOccurrenceRow> rows = await (_database
+            .select(_database.reminderOccurrences)
+          ..where(($ReminderOccurrencesTable t) =>
+              t.definitionId.equals(definitionId) &
+              t.outcome.equalsValue(ReminderOutcome.pending).not())
+          ..orderBy(<OrderClauseGenerator<$ReminderOccurrencesTable>>[
+            ($ReminderOccurrencesTable t) => OrderingTerm.desc(t.dueAt),
+          ])
+          ..limit(limit))
+        .get();
+    return rows.map((ReminderOccurrenceRow row) => row.outcome).toList();
   }
 
   /// Every occurrence that came due on the calendar day containing [day],
