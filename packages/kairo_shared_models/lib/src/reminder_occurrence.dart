@@ -64,7 +64,8 @@ class ReminderOccurrence {
   /// How long the user took to answer, or `null` if they have not.
   Duration? get responseTime => respondedAt?.difference(dueAt);
 
-  /// Returns a copy of this occurrence answered with [outcome] at [respondedAt].
+  /// Returns a copy of this occurrence answered with [outcome] at
+  /// [respondedAt].
   ReminderOccurrence answered(ReminderOutcome outcome, DateTime respondedAt) {
     return ReminderOccurrence(
       id: id,

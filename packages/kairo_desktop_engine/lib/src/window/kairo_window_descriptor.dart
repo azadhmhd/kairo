@@ -26,14 +26,12 @@ class KairoWindowDescriptor {
   });
 
   /// The dashboard window Kairo opens with.
-  ///
-  /// Has no [entrypoint]: the platform creates it from `main` before Dart runs,
-  /// rather than Kairo asking for it later.
   static const KairoWindowDescriptor mainWindow = KairoWindowDescriptor(
     id: KairoWindowId.main,
     size: Size(1100, 720),
     minimumSize: Size(880, 600),
     title: 'Kairo',
+    skipTaskbar: true,
   );
 
   /// The window the character stands in.

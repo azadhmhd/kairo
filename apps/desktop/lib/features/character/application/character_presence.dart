@@ -83,7 +83,7 @@ class CharacterPresence {
   /// Runs [work], reporting anything it throws rather than losing it.
   ///
   /// These all run from stream listeners, where an exception is an unhandled
-  /// async error that reaches nobody: the character would silently stop working.
+  /// async error that reaches nobody: the character would silently stop.
   Future<void> _reporting(String what, Future<void> Function() work) async {
     try {
       await work();

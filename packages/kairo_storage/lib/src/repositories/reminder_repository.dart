@@ -52,7 +52,7 @@ class ReminderRepository {
   }
 
   /// Adds [definition] only if no reminder with its id exists yet. How the
-  /// defaults are seeded without overwriting the user's edits on later launches.
+  /// defaults are seeded without overwriting the user's edits on relaunch.
   Future<void> insertIfAbsent(ReminderDefinition definition) {
     return _database
         .into(_database.reminderDefinitions)

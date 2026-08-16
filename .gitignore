@@ -25,6 +25,9 @@ app.*.map.json
 # Packaged DMGs. These are release assets, never repository files.
 dist/
 
+# Source footage for the README demo. The exported GIF is committed instead.
+assets/*.mov
+
 # Xcode
 **/xcuserdata/
 **/dgph

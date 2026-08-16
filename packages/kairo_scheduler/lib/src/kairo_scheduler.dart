@@ -136,7 +136,7 @@ class KairoScheduler {
 /// The application's [KairoScheduler].
 ///
 /// Created stopped. `bootstrap` starts it last, once its listeners are
-/// themselves listening, so the first tick is never published into an empty bus.
+/// themselves listening, so the first tick never lands in an empty bus.
 final Provider<KairoScheduler> schedulerProvider = Provider<KairoScheduler>(
   (Ref ref) {
     final KairoScheduler scheduler = KairoScheduler(

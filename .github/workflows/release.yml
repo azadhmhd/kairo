@@ -1,16 +1,5 @@
 name: Release
 
-# Manual only, and deliberately so. Kairo is a private repository, where Actions
-# minutes are metered and macOS runners bill at ten times the rate — a release
-# build costs roughly 100 minutes of the monthly allowance. Building locally with
-# `./scripts/package-dmg.sh` costs nothing and produces the same DMG, so this
-# workflow exists for the day you want a release built from a clean checkout
-# rather than as the normal path.
-#
-# Run it from the Actions tab, or: gh workflow run release.yml -f version=1.0.0
-#
-# The DMG is attached to a GitHub Release. Release assets are not billed and do
-# not count against the Actions storage quota, and they never enter git history.
 on:
   workflow_dispatch:
     inputs:
@@ -26,24 +15,17 @@ jobs:
   macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: subosito/flutter-action@v2
         with:
-          # Kept in step with .fvmrc. Changing one means changing the other.
           flutter-version: 3.44.7
           channel: stable
           cache: true
 
-      - name: Install Melos
-        run: dart pub global activate melos
+      - name: Resolve workspace
+        run: flutter pub get
 
-      - name: Link local packages
-        run: melos bootstrap
-
-      # Ad-hoc signed, because the Xcode project sets CODE_SIGN_IDENTITY to "-".
-      # That needs no Apple certificate, which is what lets this run unattended,
-      # and it is why the notes below tell the user to clear the quarantine flag.
       - name: Build and package
         run: ./scripts/package-dmg.sh "${{ inputs.version }}"
 
@@ -54,8 +36,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Quoted heredoc: nothing inside is expanded, so the backticks stay
-          # backticks instead of becoming command substitution.
           cat > notes.md <<'EOF'
           ## Install
 

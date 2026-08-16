@@ -2,21 +2,13 @@
 #
 # Builds Kairo for release and packages it as a DMG in dist/.
 #
-#   ./scripts/package-dmg.sh
-#
-# The version comes from apps/desktop/pubspec.yaml. Pass one to override:
-#
-#   ./scripts/package-dmg.sh 1.2.0
-#
-# Everything here ships with macOS — there is nothing to install. The same
-# script runs locally and in .github/workflows/release.yml, so a DMG built by
-# hand and a DMG built by CI are the same DMG.
+#   ./scripts/package-dmg.sh          version from apps/desktop/pubspec.yaml
+#   ./scripts/package-dmg.sh 1.2.0    explicit version
 
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# fvm locally, plain flutter on a CI runner that pins the SDK itself.
 if command -v fvm >/dev/null 2>&1 && [ -f .fvmrc ]; then
   flutter() { command fvm flutter "$@"; }
 fi
@@ -34,13 +26,9 @@ echo "==> Packaging $dmg"
 mkdir -p dist
 rm -f "$dmg"
 
-# A staging folder holding the app beside a symlink to /Applications, which is
-# what gives the DMG the familiar drag-to-install window.
 stage="$(mktemp -d)"
 trap 'rm -rf "$stage"' EXIT
 
-# ditto rather than cp -R: it preserves the extended attributes and internal
-# symlinks of a bundle, which is what keeps the code signature valid.
 ditto "$app" "$stage/Kairo.app"
 ln -s /Applications "$stage/Applications"
 
