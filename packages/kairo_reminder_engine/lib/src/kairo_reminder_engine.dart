@@ -31,6 +31,12 @@ class KairoReminderEngine {
         _workflowEngine = workflowEngine,
         _eventBus = eventBus;
 
+  /// How long an unanswered reminder waits before asking again.
+  ///
+  /// A reminder the user walked away from is not the same as one they turned
+  /// down, so it keeps asking rather than waiting out its whole interval.
+  static const Duration nagInterval = Duration(minutes: 1);
+
   final ReminderRepository _reminders;
   final SettingsRepository _settings;
   final KairoScheduler _scheduler;
@@ -39,6 +45,10 @@ class KairoReminderEngine {
 
   final Map<String, ReminderDefinition> _definitions =
       <String, ReminderDefinition>{};
+
+  /// The reminder each definition is still waiting on an answer for.
+  final Map<String, ReminderOccurrence> _unanswered =
+      <String, ReminderOccurrence>{};
 
   /// The schedule ids this engine put in the scheduler. Tracked so turning a
   /// reminder off removes its schedule and nothing else — the scheduler is
@@ -49,6 +59,7 @@ class KairoReminderEngine {
 
   StreamSubscription<List<ReminderDefinition>>? _definitionsSubscription;
   StreamSubscription<UserSettings>? _settingsSubscription;
+  StreamSubscription<ReminderAnsweredEvent>? _answeredSubscription;
 
   /// The user's reminders as this engine last saw them.
   Iterable<ReminderDefinition> get definitions => _definitions.values;
@@ -69,6 +80,8 @@ class KairoReminderEngine {
         );
 
     _workflowEngine.register(_dueWorkflow());
+    _answeredSubscription =
+        _eventBus.on<ReminderAnsweredEvent>().listen(_onAnswered);
     _definitionsSubscription =
         _reminders.watchDefinitions().listen(_syncSchedules);
   }
@@ -77,14 +90,17 @@ class KairoReminderEngine {
   Future<void> dispose() async {
     await _definitionsSubscription?.cancel();
     await _settingsSubscription?.cancel();
+    await _answeredSubscription?.cancel();
     _definitionsSubscription = null;
     _settingsSubscription = null;
+    _answeredSubscription = null;
 
     for (final String id in _scheduled) {
       _scheduler.remove(id);
     }
     _scheduled.clear();
     _definitions.clear();
+    _unanswered.clear();
   }
 
   /// The rule that turns a schedule coming due into a reminder being shown.
@@ -117,27 +133,65 @@ class KairoReminderEngine {
       !_currentSettings.isQuietAt(event.dueAt);
 
   /// Records the reminder and announces it.
+  ///
+  /// A reminder still waiting for an answer is asked again rather than started
+  /// over, and the next asking is [nagInterval] away instead of a whole
+  /// interval. A second occurrence would mark the first missed and count one
+  /// reminder as two, so the user's history would degrade the longer they took
+  /// to answer.
   Future<void> _announce(ScheduleDueEvent event) async {
     final ReminderDefinition? definition = _definitions[event.scheduleId];
     if (definition == null) {
       return;
     }
 
-    // Anything still unanswered has been overtaken by this one, and would
-    // otherwise stay pending forever.
-    await _reminders.expirePending(definition.id, event.dueAt);
+    ReminderOccurrence? occurrence = _unanswered[definition.id];
+    if (occurrence == null) {
+      // Anything still unanswered has been overtaken by this one, and would
+      // otherwise stay pending forever.
+      await _reminders.expirePending(definition.id, event.dueAt);
 
-    final ReminderOccurrence occurrence = ReminderOccurrence(
-      // Derived rather than random: a reminder cannot come due twice at the
-      // same instant, and this id is readable in the database.
-      id: '${definition.id}@${event.dueAt.toIso8601String()}',
-      definitionId: definition.id,
-      dueAt: event.dueAt,
-    );
+      occurrence = ReminderOccurrence(
+        // Derived rather than random: a reminder cannot come due twice at the
+        // same instant, and this id is readable in the database.
+        id: '${definition.id}@${event.dueAt.toIso8601String()}',
+        definitionId: definition.id,
+        dueAt: event.dueAt,
+      );
+      await _reminders.recordDue(occurrence);
+      _unanswered[definition.id] = occurrence;
+    }
 
-    await _reminders.recordDue(occurrence);
+    // Measured from now rather than from [event.dueAt], which is already in the
+    // past and can be hours stale after the machine has slept. Nagging from
+    // there would spend a tick catching up for every minute of lag.
+    _scheduler.rescheduleTo(definition.id, DateTime.now().add(nagInterval));
     _eventBus.publish(
       ReminderDueEvent(definition: definition, occurrence: occurrence),
+    );
+  }
+
+  /// Puts a reminder back on its usual rhythm once it has been answered.
+  ///
+  /// Snoozing is left alone: `ReminderService` sets that firing itself, and the
+  /// bus delivers this after it has, so rescheduling here would overwrite the
+  /// snooze with a full interval.
+  void _onAnswered(ReminderAnsweredEvent event) {
+    final String definitionId = event.occurrence.definitionId;
+    if (_unanswered[definitionId]?.id != event.occurrence.id) {
+      return;
+    }
+    _unanswered.remove(definitionId);
+
+    final ReminderDefinition? definition = _definitions[definitionId];
+    if (definition == null || event.outcome == ReminderOutcome.snoozed) {
+      return;
+    }
+
+    _scheduler.rescheduleTo(
+      definitionId,
+      (event.occurrence.respondedAt ?? event.occurrence.dueAt)
+          .add(definition.interval),
     );
   }
 
@@ -173,6 +227,11 @@ class KairoReminderEngine {
     for (final String id in _scheduled.difference(wanted)) {
       _scheduler.remove(id);
     }
+
+    // A reminder switched off or deleted mid-question stops being asked about.
+    _unanswered.removeWhere(
+      (String id, ReminderOccurrence _) => !wanted.contains(id),
+    );
 
     _scheduled
       ..clear()
