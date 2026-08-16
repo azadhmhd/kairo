@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kairo_ai/ai.dart';
 import 'package:kairo_desktop_engine/desktop_engine.dart';
 import 'package:kairo_event_bus/event_bus.dart';
 import 'package:kairo_reminder_engine/reminder_engine.dart';
@@ -24,6 +25,7 @@ Future<void> bootstrap() async {
   final UserSettings settings = await _startStorage(container);
   _startWorkflowEngine(container);
   await _startReminders(container);
+  await _startCoach(container);
   await _startDesktopShell(container, settings);
   _startScheduler(container);
 
@@ -56,6 +58,25 @@ void _startWorkflowEngine(ProviderContainer container) {
 /// Awaited, so the schedules exist before the clock starts checking them.
 Future<void> _startReminders(ProviderContainer container) {
   return container.read(reminderEngineProvider).start();
+}
+
+/// Starts the optional coach. Failure is swallowed: an unreachable model must
+/// not stop the application coming up.
+Future<void> _startCoach(ProviderContainer container) async {
+  try {
+    await container.read(coachProvider).start();
+    await container.read(healthReporterProvider).start();
+  } on Object catch (error, stack) {
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: error,
+        stack: stack,
+        library: 'kairo coach',
+        context: ErrorDescription('starting the coach'),
+        silent: true,
+      ),
+    );
+  }
 }
 
 /// Starts the clock.
@@ -98,6 +119,7 @@ Future<void> _startDesktopShell(
       channel: container.read(isolateChannelProvider),
       eventBus: container.read(eventBusProvider),
       service: container.read(reminderServiceProvider),
+      coach: container.read(coachRepositoryProvider),
       engine: engine,
       window: window,
     ).start();

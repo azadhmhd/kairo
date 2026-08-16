@@ -256,9 +256,8 @@ struct KairoNativeRect: Hashable, CustomStringConvertible {
 
 /// Everything the platform needs in order to create a window.
 ///
-/// Every field is required. Defaults belong to `KairoWindowDescriptor` on the
-/// Dart side, where they can be documented and tested; a schema that also
-/// carries them would be a second place for them to disagree.
+/// Every field is required: defaults belong to `KairoWindowDescriptor`, and a
+/// schema that also carried them would be a second place for them to disagree.
 ///
 /// Generated class from Pigeon that represents data sent in messages.
 struct KairoNativeWindowSpec: Hashable, CustomStringConvertible {
@@ -280,18 +279,12 @@ struct KairoNativeWindowSpec: Hashable, CustomStringConvertible {
   /// Where the window sits in the stacking order.
   var level: KairoNativeWindowLevel
   /// Whether the window's background is transparent rather than opaque.
-  ///
-  /// This is what lets the character appear to stand on the desktop instead of
-  /// inside a rectangle.
   var transparent: Bool
   /// Whether the platform draws a title bar and frame around the window.
   var decorated: Bool
   /// Whether the user may resize the window.
   var resizable: Bool
   /// Whether clicks fall through the window to whatever is behind it.
-  ///
-  /// A character that could not be clicked through would cover part of the
-  /// screen the user is trying to work in.
   var ignoresMouseEvents: Bool
   /// Whether the window is hidden from the dock, taskbar and window switcher.
   var skipTaskbar: Bool
@@ -455,23 +448,18 @@ protocol KairoNativeWindowApi {
   func getWindowBounds(handle: Int64, completion: @escaping (Result<KairoNativeRect, Error>) -> Void)
   /// Whether the window at [handle] is currently on screen.
   ///
-  /// Asked of the platform rather than remembered on the Dart side, because the
-  /// platform can hide a window without being told to — the user closing it,
-  /// or the space it lives on going away.
+  /// Asked of the platform rather than remembered: it can hide a window without
+  /// being told to, when the user closes it or its space goes away.
   func isWindowVisible(handle: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
   /// Changes where the window at [handle] sits in the stacking order.
   func setWindowLevel(handle: Int64, level: KairoNativeWindowLevel, completion: @escaping (Result<Void, Error>) -> Void)
   /// Sets whether clicks fall through the window at [handle].
   func setIgnoresMouseEvents(handle: Int64, ignore: Bool, completion: @escaping (Result<Void, Error>) -> Void)
-  /// The usable area of the display the user is working on.
+  /// The usable area of the display the user is working on — the screen holding
+  /// keyboard focus, not the one Kairo launched on.
   ///
-  /// The screen holding the keyboard focus, not a fixed one: a character that
-  /// appeared on the display Kairo happened to launch on would be talking to an
-  /// empty chair. Asked again every time it is needed, because the answer
-  /// changes as the user moves between screens.
-  ///
-  /// Usable excludes the menu bar and the dock, so something standing on the
-  /// bottom of this rectangle is standing on the desktop rather than behind the
+  /// Usable excludes the menu bar and the dock, so something placed on the
+  /// bottom edge of this rectangle sits on the desktop rather than behind the
   /// dock.
   func activeDisplayBounds(completion: @escaping (Result<KairoNativeRect, Error>) -> Void)
 }
@@ -616,9 +604,8 @@ class KairoNativeWindowApiSetup {
     }
     /// Whether the window at [handle] is currently on screen.
     ///
-    /// Asked of the platform rather than remembered on the Dart side, because the
-    /// platform can hide a window without being told to — the user closing it,
-    /// or the space it lives on going away.
+    /// Asked of the platform rather than remembered: it can hide a window without
+    /// being told to, when the user closes it or its space goes away.
     let isWindowVisibleChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.kairo_desktop_engine.KairoNativeWindowApi.isWindowVisible\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       isWindowVisibleChannel.setMessageHandler { message, reply in
@@ -674,15 +661,11 @@ class KairoNativeWindowApiSetup {
     } else {
       setIgnoresMouseEventsChannel.setMessageHandler(nil)
     }
-    /// The usable area of the display the user is working on.
+    /// The usable area of the display the user is working on — the screen holding
+    /// keyboard focus, not the one Kairo launched on.
     ///
-    /// The screen holding the keyboard focus, not a fixed one: a character that
-    /// appeared on the display Kairo happened to launch on would be talking to an
-    /// empty chair. Asked again every time it is needed, because the answer
-    /// changes as the user moves between screens.
-    ///
-    /// Usable excludes the menu bar and the dock, so something standing on the
-    /// bottom of this rectangle is standing on the desktop rather than behind the
+    /// Usable excludes the menu bar and the dock, so something placed on the
+    /// bottom edge of this rectangle sits on the desktop rather than behind the
     /// dock.
     let activeDisplayBoundsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.kairo_desktop_engine.KairoNativeWindowApi.activeDisplayBounds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
@@ -707,9 +690,8 @@ class KairoNativeWindowApiSetup {
 protocol KairoNativeSystemApi {
   /// Whether the system starts Kairo when the user logs in.
   ///
-  /// Asked of the system rather than remembered, because the user can revoke it
-  /// in System Settings without Kairo being told, and a switch that shows what
-  /// Kairo last wrote instead of what is true is a switch that lies.
+  /// Asked of the system rather than remembered: the user can revoke it in
+  /// System Settings without Kairo being told.
   func launchesAtLogin(completion: @escaping (Result<Bool, Error>) -> Void)
   /// Asks the system to start Kairo at login, or to stop doing so.
   func setLaunchAtLogin(enabled: Bool, completion: @escaping (Result<Void, Error>) -> Void)
@@ -723,9 +705,8 @@ class KairoNativeSystemApiSetup {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
     /// Whether the system starts Kairo when the user logs in.
     ///
-    /// Asked of the system rather than remembered, because the user can revoke it
-    /// in System Settings without Kairo being told, and a switch that shows what
-    /// Kairo last wrote instead of what is true is a switch that lies.
+    /// Asked of the system rather than remembered: the user can revoke it in
+    /// System Settings without Kairo being told.
     let launchesAtLoginChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.kairo_desktop_engine.KairoNativeSystemApi.launchesAtLogin\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       launchesAtLoginChannel.setMessageHandler { _, reply in
@@ -763,24 +744,18 @@ class KairoNativeSystemApiSetup {
 }
 /// How one of Kairo's isolates reaches the others.
 ///
-/// Every window Kairo creates runs its own `FlutterEngine`, and so its own
-/// isolate: the main window and the character window are two Dart programs that
-/// happen to share a process. They have no port, no memory and no event bus in
-/// common, so the only path from one to the other is down to the platform and
-/// back up again. This is that path.
+/// Kairo's windows share no memory and no event bus, so the only path between
+/// them is down to the platform and back up. This is that path.
 ///
-/// The payload is text on purpose. The platform is a postman: it should not
-/// need a new schema, and a rebuilt bridge, every time the application finds
-/// something new to say. What the text means belongs to the application.
+/// The payload is text on purpose: the platform is a postman, and should not
+/// need a rebuilt bridge every time the application finds something new to say.
 ///
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol KairoNativeRelayApi {
   /// Passes [message] to every Kairo isolate except the one that sent it.
   ///
-  /// Broadcast rather than addressed, because Kairo has two isolates and
-  /// addressing would mean teaching each of them the other's window handle for
-  /// no gain. Delivery is best-effort: an isolate that is not listening yet
-  /// misses the message rather than queueing it.
+  /// Broadcast rather than addressed. Delivery is best-effort: an isolate not
+  /// yet listening misses the message rather than queueing it.
   func relay(message: String, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
@@ -792,10 +767,8 @@ class KairoNativeRelayApiSetup {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
     /// Passes [message] to every Kairo isolate except the one that sent it.
     ///
-    /// Broadcast rather than addressed, because Kairo has two isolates and
-    /// addressing would mean teaching each of them the other's window handle for
-    /// no gain. Delivery is best-effort: an isolate that is not listening yet
-    /// misses the message rather than queueing it.
+    /// Broadcast rather than addressed. Delivery is best-effort: an isolate not
+    /// yet listening misses the message rather than queueing it.
     let relayChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.kairo_desktop_engine.KairoNativeRelayApi.relay\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       relayChannel.setMessageHandler { message, reply in

@@ -82,7 +82,6 @@ class RemindersScreen extends ConsumerWidget {
     );
   }
 
-  /// Asks the user what to be reminded about, and saves it if they say.
   Future<void> _addCustom(BuildContext context, WidgetRef ref) async {
     final _CustomReminderDraft? draft = await showDialog<_CustomReminderDraft>(
       context: context,
@@ -106,7 +105,6 @@ class RemindersScreen extends ConsumerWidget {
   }
 }
 
-/// What the user filled in on the new reminder dialog.
 class _CustomReminderDraft {
   const _CustomReminderDraft(this.label, this.minutes);
 
@@ -114,11 +112,9 @@ class _CustomReminderDraft {
   final int minutes;
 }
 
-/// Asks for a reminder's message and how often it should come.
 class _CustomReminderDialog extends StatefulWidget {
   const _CustomReminderDialog({required this.intervalChoices});
 
-  /// Wide enough for a sentence, so the message is not typed through a slot.
   static const double _width = 420;
 
   final List<int> intervalChoices;

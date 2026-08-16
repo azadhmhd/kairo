@@ -63,6 +63,10 @@ class _KairoState extends State<_Kairo> with SingleTickerProviderStateMixin {
   /// How long the parting line stays up before the character walks off.
   static const Duration _farewellDuration = Duration(milliseconds: 1900);
 
+  /// How long a line that was not asked for stays up. Longer than a farewell,
+  /// which answers something the user just did.
+  static const Duration _asideDuration = Duration(milliseconds: 5200);
+
   late final KairoIsolateChannel _channel;
 
   late final AnimationController _controller = AnimationController(
@@ -151,6 +155,8 @@ class _KairoState extends State<_Kairo> with SingleTickerProviderStateMixin {
         _ask(show);
       case final ReminderSettled settled:
         _part(settled.outcome);
+      case final SayLine say:
+        _sayAside(say.line);
       case ReminderUnanswered():
         // Nothing was chosen, so there is nothing to react to: leave silently.
         _leave();
@@ -200,12 +206,29 @@ class _KairoState extends State<_Kairo> with SingleTickerProviderStateMixin {
     if (_farewell != null || _controller.isDismissed) {
       return;
     }
+    final String? coached = _saying?.reactions[outcome];
     setState(() {
       _saying = null;
-      _farewell = _Farewell.forOutcome(outcome);
+      _farewell = _Farewell.forOutcome(outcome).saying(coached);
     });
     _parting?.cancel();
     _parting = Timer(_farewellDuration, _leave);
+  }
+
+  /// Walks on, says one thing that needs no answer, and leaves. Reuses the
+  /// farewell path, already a bubble with no buttons and a timer.
+  void _sayAside(String line) {
+    _parting?.cancel();
+    setState(() {
+      _saying = null;
+      _farewell = _Farewell(
+        line: line,
+        animation: KairoAnimation.wave,
+        expression: KairoExpression.encouraging,
+      );
+    });
+    _controller.forward();
+    _parting = Timer(_asideDuration, _leave);
   }
 
   /// Walks back off the way it came.
@@ -226,7 +249,7 @@ class _KairoState extends State<_Kairo> with SingleTickerProviderStateMixin {
     final _Farewell? farewell = _farewell;
 
     final Widget bubble;
-    if (farewell != null) {
+    if (farewell != null && _present) {
       bubble = _SpeechBubble(
         key: const ValueKey<String>('farewell'),
         label: farewell.line,
@@ -321,6 +344,11 @@ class _Farewell {
       expression: KairoExpression.happy,
     ),
   };
+
+  /// Returns this farewell with [line] instead, or unchanged when null.
+  _Farewell saying(String? line) => line == null
+      ? this
+      : _Farewell(line: line, animation: animation, expression: expression);
 
   /// The parting line.
   final String line;

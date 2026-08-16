@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
+import 'package:kairo_ai/ai.dart';
 import 'package:kairo_desktop_engine/desktop_engine.dart';
 import 'package:kairo_event_bus/event_bus.dart';
 import 'package:kairo_reminder_engine/reminder_engine.dart';
 import 'package:kairo_shared_models/shared_models.dart';
+import 'package:kairo_storage/storage.dart';
 
 import 'character_messages.dart';
 
@@ -36,25 +39,35 @@ class CharacterPresence {
     required KairoIsolateChannel channel,
     required KairoEventBus eventBus,
     required ReminderService service,
+    required CoachRepository coach,
     required KairoDesktopEngine engine,
     required KairoNativeWindowController window,
   }) : _channel = channel,
        _eventBus = eventBus,
        _service = service,
+       _coach = coach,
        _engine = engine,
        _window = window;
 
   final KairoIsolateChannel _channel;
   final KairoEventBus _eventBus;
   final ReminderService _service;
+  final CoachRepository _coach;
   final KairoDesktopEngine _engine;
   final KairoNativeWindowController _window;
+
+  final Random _random = Random();
+
+  Map<ReminderOutcome, List<String>> _reactions =
+      const <ReminderOutcome, List<String>>{};
 
   /// How long the character waits on screen for an answer.
   static const Duration patience = Duration(seconds: 30);
 
   StreamSubscription<ReminderDueEvent>? _due;
   StreamSubscription<ReminderAnsweredEvent>? _answered;
+  StreamSubscription<CoachSpokeEvent>? _spoke;
+  StreamSubscription<Map<ReminderOutcome, List<String>>>? _reactionsChanged;
   StreamSubscription<String>? _fromCharacter;
 
   /// The reminder being asked about. Held because the window reports only an
@@ -73,6 +86,14 @@ class CharacterPresence {
     _answered = _eventBus.on<ReminderAnsweredEvent>().listen(
       (ReminderAnsweredEvent event) =>
           _reporting('taking a reminder away', () => _onAnswered(event)),
+    );
+    _spoke = _eventBus.on<CoachSpokeEvent>().listen(
+      (CoachSpokeEvent event) =>
+          _reporting('saying goodnight', () => _onSpoke(event)),
+    );
+    _reactionsChanged = _coach.watchReactions().listen(
+      (Map<ReminderOutcome, List<String>> reactions) =>
+          _reactions = reactions,
     );
     _fromCharacter = _channel.messages.listen(
       (String text) =>
@@ -105,9 +126,13 @@ class CharacterPresence {
     _waiting = null;
     await _due?.cancel();
     await _answered?.cancel();
+    await _spoke?.cancel();
+    await _reactionsChanged?.cancel();
     await _fromCharacter?.cancel();
     _due = null;
     _answered = null;
+    _spoke = null;
+    _reactionsChanged = null;
     _fromCharacter = null;
     _asking = null;
   }
@@ -126,6 +151,7 @@ class CharacterPresence {
       ShowReminder(
         occurrenceId: event.occurrence.id,
         label: event.definition.label,
+        reactions: _reactionsNow(),
       ).encode(),
     );
     await _window.setIgnoresMouseEvents(ignore: false);
@@ -158,6 +184,29 @@ class CharacterPresence {
     _waiting?.cancel();
     await _channel.send(ReminderSettled(event.outcome).encode());
     await _window.setIgnoresMouseEvents(ignore: true);
+  }
+
+  /// One reaction per answer the user could give, drawn fresh each time so the
+  /// same reminder twice running is not met with the same words.
+  Map<ReminderOutcome, String> _reactionsNow() {
+    return <ReminderOutcome, String>{
+      for (final MapEntry<ReminderOutcome, List<String>> entry
+          in _reactions.entries)
+        if (entry.value.isNotEmpty)
+          entry.key: entry.value[_random.nextInt(entry.value.length)],
+    };
+  }
+
+  /// Brings the character on to say something that needs no answer. Skipped
+  /// while a reminder is on screen, which is waiting for the user.
+  Future<void> _onSpoke(CoachSpokeEvent event) async {
+    if (_asking != null) {
+      return;
+    }
+
+    await _channel.send(SayLine(event.line).encode());
+    await _window.move(characterPositionOn(await _engine.activeDisplayBounds()));
+    await _window.show();
   }
 
   /// Sends the character away after [patience] with no answer.
